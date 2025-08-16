@@ -47,3 +47,7 @@ body {
   font-family: 'Inter', 'system-ui', 'sans-serif';
   background-color: #f9fafb;
 }
+
+.hidden {
+  display: none;
+}

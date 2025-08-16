@@ -73,36 +73,36 @@ function setupEventListeners() {
 
   // 监听文件选择
   document.getElementById('excelFileInput').addEventListener('change', handleExcelFileSelect);
-  
+
   // 关闭模态框
   closeModalBtn.addEventListener('click', closeModal);
   cancelBtn.addEventListener('click', closeModal);
-  
+
   // 点击模态框外部关闭
   companyModal.addEventListener('click', (e) => {
     if (e.target === companyModal) {
       closeModal();
     }
   });
-  
+
   // 提交表单
   companyForm.addEventListener('submit', (e) => {
     e.preventDefault();
     saveCompany();
   });
-  
+
   // 状态筛选
   statusFilters.forEach(btn => {
     btn.addEventListener('click', () => {
       // 更新活跃状态
       statusFilters.forEach(b => b.classList.remove('ring-2', 'ring-primary/50'));
       btn.classList.add('ring-2', 'ring-primary/50');
-      
+
       currentFilter = btn.dataset.status;
       renderCompanyList();
     });
   });
-  
+
   // 排序
   sortByDateAsc.addEventListener('click', () => {
     sortOrder = 'asc';
@@ -110,22 +110,36 @@ function setupEventListeners() {
     sortByDateAsc.classList.add('ring-2', 'ring-primary/50');
     sortByDateDesc.classList.remove('ring-2', 'ring-primary/50');
   });
-  
+
   sortByDateDesc.addEventListener('click', () => {
     sortOrder = 'desc';
     renderCompanyList();
     sortByDateDesc.classList.add('ring-2', 'ring-primary/50');
     sortByDateAsc.classList.remove('ring-2', 'ring-primary/50');
   });
-  
+
   // 清空所有记录
   clearAllBtn.addEventListener('click', () => {
-    if (companies.length > 0 && confirm('确定要清空所有记录吗？此操作不可恢复！')) {
-      companies = [];
-      saveToLocalStorage();
-      renderCompanyList();
-      updateTotalCount();
-      updateStatusChart();
+    if (companies.length > 0) {
+      Swal.fire({
+        title: '确认清空记录',
+        text: "确定要清空所有记录吗？此操作不可恢复！",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // 用户点击"确定"后执行清空操作
+          companies = [];
+          saveToLocalStorage();
+          renderCompanyList();
+          updateTotalCount();
+          updateStatusChart();
+        }
+      });
     }
   });
 }
@@ -135,7 +149,7 @@ function openModal(company = null) {
   // 重置表单
   companyForm.reset();
   document.getElementById('companyId').value = '';
-  
+
   if (company) {
     // 编辑模式
     modalTitle.textContent = `编辑 ${company.name} 记录`;
@@ -150,7 +164,7 @@ function openModal(company = null) {
     // 添加模式
     modalTitle.textContent = '添加公司记录';
   }
-  
+
   companyModal.classList.remove('hidden');
   // 添加动画效果
   setTimeout(() => {
@@ -217,27 +231,27 @@ function saveCompany() {
 // 渲染公司列表
 function renderCompanyList() {
   let filteredCompanies = companies;
-  
+
   // 应用筛选
   if (currentFilter !== 'all') {
     filteredCompanies = companies.filter(company => company.status === currentFilter);
   }
-  
+
   // 应用排序
   filteredCompanies = [...filteredCompanies].sort((a, b) => {
     if (!a.interviewTime && !b.interviewTime) return 0;
     if (!a.interviewTime) return 1;
     if (!b.interviewTime) return -1;
-    
+
     const dateA = new Date(a.interviewTime);
     const dateB = new Date(b.interviewTime);
-    
+
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   // 清空列表
   companyListEl.innerHTML = '';
-  
+
   if (filteredCompanies.length === 0) {
     companyListEl.innerHTML = `
       <div class="col-span-full flex justify-center items-center py-16 text-gray-500">
@@ -323,13 +337,25 @@ function editCompany(id) {
 
 // 删除公司
 function deleteCompany(id) {
-  if (confirm('确定要删除这条记录吗？')) {
-    companies = companies.filter(c => c.id !== id);
-    saveToLocalStorage();
-    renderCompanyList();
-    updateTotalCount();
-    updateStatusChart();
-  }
+  Swal.fire({
+    title: '确认删除记录',
+    text: "确定要删除这条记录吗？",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // 用户点击"确定"后执行清空操作
+      companies = companies.filter(c => c.id !== id);
+      saveToLocalStorage();
+      renderCompanyList();
+      updateTotalCount();
+      updateStatusChart();
+    }
+  });
 }
 
 // 保存到本地存储
@@ -345,7 +371,7 @@ function updateTotalCount() {
 // 初始化状态图表
 function initStatusChart() {
   const ctx = document.getElementById('statusChart').getContext('2d');
-  
+
   // 计算各状态数量
   const statusCounts = {
     applied: 0,
@@ -356,13 +382,13 @@ function initStatusChart() {
     hr: 0,
     rejected: 0
   };
-  
+
   companies.forEach(company => {
     if (statusCounts.hasOwnProperty(company.status)) {
       statusCounts[company.status]++;
     }
   });
-  
+
   statusChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -409,13 +435,13 @@ function updateStatusChart() {
       hr: 0,
       rejected: 0
     };
-    
+
     companies.forEach(company => {
       if (statusCounts.hasOwnProperty(company.status)) {
         statusCounts[company.status]++;
       }
     });
-    
+
     statusChart.data.datasets[0].data = Object.values(statusCounts);
     statusChart.update();
   }
@@ -466,7 +492,7 @@ function handleExcelFileSelect(e) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
@@ -509,7 +535,7 @@ function handleExcelFileSelect(e) {
     }
   };
   reader.readAsArrayBuffer(file);
-  
+
   // 清空文件输入
   e.target.value = '';
 }
@@ -520,7 +546,7 @@ function importFromExcelOnLoad() {
   if (companies.length > 0) {
     return;
   }
-  
+
   // 这里可以添加从服务器加载数据的逻辑
   // 目前主要使用localStorage
 }
