@@ -38,7 +38,7 @@ const interviewStartTimeInput = document.getElementById('interviewStartTime');
 const interviewEndTimeInput = document.getElementById('interviewEndTime');
 const interviewLinkInput = document.getElementById('interviewLink');
 const summaryInput = document.getElementById('summary');
-const summaryLinkInput = document.getElementById('summaryLink');
+const summaryLinksContainer = document.getElementById('summaryLinksContainer');
 
 // 批量删除相关元素
 const enterBatchModeBtn = document.getElementById('enterBatchModeBtn');
@@ -131,6 +131,51 @@ function setQuickDuration(minutes) {
   interviewEndTimeInput.value = `${year}-${month}-${day}T${hours}:${minutesStr}`;
 }
 
+// 添加总结链接
+function addSummaryLink(name = '', url = '') {
+  const linkId = Date.now() + Math.random();
+  const linkDiv = document.createElement('div');
+  linkDiv.className = 'flex gap-2 items-center p-2 bg-gray-50 rounded-lg';
+  linkDiv.innerHTML = `
+    <input type="text" placeholder="链接名称" value="${name}" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary focus:border-primary">
+    <input type="url" placeholder="https://" value="${url}" class="flex-2 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary focus:border-primary">
+    <button type="button" onclick="this.parentElement.remove()" class="px-2 py-1 text-red-600 hover:bg-red-100 rounded-md transition-all">
+      <i class="fa fa-times"></i>
+    </button>
+  `;
+  summaryLinksContainer.appendChild(linkDiv);
+}
+
+// 获取总结链接数据
+function getSummaryLinksData() {
+  const links = [];
+  const linkElements = summaryLinksContainer.querySelectorAll('.flex.gap-2');
+  
+  linkElements.forEach(element => {
+    const nameInput = element.querySelector('input[type="text"]');
+    const urlInput = element.querySelector('input[type="url"]');
+    
+    if (nameInput.value.trim() && urlInput.value.trim()) {
+      links.push({
+        name: nameInput.value.trim(),
+        url: urlInput.value.trim()
+      });
+    }
+  });
+  
+  return links;
+}
+
+// 加载总结链接到表单
+function loadSummaryLinksToForm(links) {
+  summaryLinksContainer.innerHTML = '';
+  if (links && links.length > 0) {
+    links.forEach(link => {
+      addSummaryLink(link.name, link.url);
+    });
+  }
+}
+
 // 打开模态框
 function openModal(company = null) {
   if (company) {
@@ -142,11 +187,23 @@ function openModal(company = null) {
     interviewEndTimeInput.value = company.interviewEndTime || '';
     interviewLinkInput.value = company.interviewLink || '';
     summaryInput.value = company.summary || '';
-    summaryLinkInput.value = company.summaryLink || '';
+    
+    // 处理旧版本数据兼容性
+    if (company.summaryLinks && Array.isArray(company.summaryLinks)) {
+      loadSummaryLinksToForm(company.summaryLinks);
+    } else if (company.summaryLink) {
+      // 兼容旧版本的单个总结链接
+      loadSummaryLinksToForm([{ name: '总结链接', url: company.summaryLink }]);
+    } else {
+      loadSummaryLinksToForm([]);
+    }
   } else {
     modalTitle.textContent = '添加公司记录';
     companyForm.reset();
     companyIdInput.value = '';
+    summaryLinksContainer.innerHTML = '';
+    // 默认添加一个空的链接输入
+    addSummaryLink();
   }
   companyModal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -169,7 +226,7 @@ function handleFormSubmit(e) {
     interviewEndTime: interviewEndTimeInput.value,
     interviewLink: interviewLinkInput.value.trim(),
     summary: summaryInput.value.trim(),
-    summaryLink: summaryLinkInput.value.trim(),
+    summaryLinks: getSummaryLinksData(),
     createdAt: new Date().toISOString()
   };
 
@@ -294,6 +351,34 @@ function createCompanyCard(company) {
     }
   }
   
+  // 处理总结链接显示
+  let summaryLinksDisplay = '';
+  if (company.summaryLinks && company.summaryLinks.length > 0) {
+    summaryLinksDisplay = `
+      <div class="mb-3">
+        <p class="text-sm font-medium text-gray-700 mb-1">相关链接：</p>
+        <div class="space-y-1">
+          ${company.summaryLinks.map(link => `
+            <a href="${link.url}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+              <i class="fa fa-link mr-2 text-gray-400"></i>
+              <span class="truncate">${link.name}</span>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (company.summaryLink) {
+    // 兼容旧版本数据
+    summaryLinksDisplay = `
+      <div class="mb-3">
+        <a href="${company.summaryLink}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+          <i class="fa fa-file-text-o mr-2 text-gray-400"></i>
+          <span class="truncate">总结链接</span>
+        </a>
+      </div>
+    `;
+  }
+  
   card.innerHTML = `
     ${checkboxHtml}
     <div class="flex-1 flex flex-col">
@@ -325,14 +410,7 @@ function createCompanyCard(company) {
         </div>
       ` : ''}
       
-      ${company.summaryLink ? `
-        <div class="mb-3">
-          <a href="${company.summaryLink}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
-            <i class="fa fa-file-text-o mr-2 text-gray-400"></i>
-            <span class="truncate">总结链接</span>
-          </a>
-        </div>
-      ` : ''}
+      ${summaryLinksDisplay}
     </div>
     
     ${!isBatchMode ? `
@@ -650,16 +728,31 @@ function exportToExcel() {
     return;
   }
 
-  const exportData = companies.map(company => ({
-    '公司名称': company.name,
-    '投递状态': statusTextMap[company.status],
-    '面试开始时间': company.interviewStartTime ? formatDateTime(company.interviewStartTime) : '',
-    '面试结束时间': company.interviewEndTime ? formatDateTime(company.interviewEndTime) : '',
-    '面试网址': company.interviewLink || '',
-    '总结': company.summary || '',
-    '总结链接': company.summaryLink || '',
-    '创建时间': formatDateTime(company.createdAt)
-  }));
+  const exportData = companies.map(company => {
+    const baseData = {
+      '公司名称': company.name,
+      '投递状态': statusTextMap[company.status],
+      '面试开始时间': company.interviewStartTime ? formatDateTime(company.interviewStartTime) : '',
+      '面试结束时间': company.interviewEndTime ? formatDateTime(company.interviewEndTime) : '',
+      '面试网址': company.interviewLink || '',
+      '总结': company.summary || '',
+      '创建时间': formatDateTime(company.createdAt)
+    };
+    
+    // 处理总结链接
+    if (company.summaryLinks && company.summaryLinks.length > 0) {
+      company.summaryLinks.forEach((link, index) => {
+        baseData[`链接${index + 1}名称`] = link.name;
+        baseData[`链接${index + 1}地址`] = link.url;
+      });
+    } else if (company.summaryLink) {
+      // 兼容旧版本
+      baseData['链接1名称'] = '总结链接';
+      baseData['链接1地址'] = company.summaryLink;
+    }
+    
+    return baseData;
+  });
 
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new();
@@ -668,50 +761,78 @@ function exportToExcel() {
 }
 
 // 处理Excel文件选择
-function handleExcelFileSelect(e) {
-  const file = e.target.files[0];
+function handleExcelFileSelect(event) {
+  const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function (e) {
+  reader.onload = function(e) {
     try {
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       const importedCompanies = jsonData.map(item => {
-        let statusKey = 'applied';
-        Object.entries(statusTextMap).forEach(([key, value]) => {
-          if (value === item['投递状态']) {
-            statusKey = key;
-          }
-        });
-
-        return {
+        const company = {
           id: Date.now().toString() + Math.floor(Math.random() * 1000),
           name: item['公司名称'] || '',
-          status: statusKey,
+          status: Object.keys(statusTextMap).find(key => statusTextMap[key] === item['投递状态']) || 'applied',
           interviewStartTime: item['面试开始时间'] || '',
           interviewEndTime: item['面试结束时间'] || '',
           interviewLink: item['面试网址'] || '',
           summary: item['总结'] || '',
-          summaryLink: item['总结链接'] || '',
           createdAt: new Date().toISOString()
         };
+
+        // 处理总结链接
+        const summaryLinks = [];
+        let index = 1;
+        while (item[`链接${index}名称`] && item[`链接${index}地址`]) {
+          summaryLinks.push({
+            name: item[`链接${index}名称`],
+            url: item[`链接${index}地址`]
+          });
+          index++;
+        }
+        
+        if (summaryLinks.length > 0) {
+          company.summaryLinks = summaryLinks;
+        } else if (item['总结链接']) {
+          // 兼容旧版本
+          company.summaryLinks = [{ name: '总结链接', url: item['总结链接'] }];
+        }
+
+        return company;
       });
 
       if (importedCompanies.length > 0) {
-        companies = importedCompanies;
+        companies = [...companies, ...importedCompanies];
         saveToLocalStorage();
         renderCompanyList();
         updateTotalCount();
         updateStatusChart();
-        alert(`成功导入 ${importedCompanies.length} 条记录`);
+        
+        Swal.fire({
+          title: '导入成功',
+          text: `成功导入 ${importedCompanies.length} 条记录`,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
+
+      event.target.value = '';
     } catch (error) {
-      alert('导入失败，请检查文件格式');
-      console.error(error);
+      console.error('导入失败:', error);
+      Swal.fire({
+        title: '导入失败',
+        text: '文件格式错误或数据损坏',
+        icon: 'error',
+        confirmButtonText: '确定'
+      });
+      event.target.value = '';
     }
   };
   reader.readAsArrayBuffer(file);
