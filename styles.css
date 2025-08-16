@@ -1,0 +1,48 @@
+/* 自定义工具类 */
+@layer utilities {
+  .content-auto {
+    content-visibility: auto;
+  }
+  .card-shadow {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  .card-hover {
+    transition: all 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .modal-transition {
+    transition: transform 0.2s ease-in-out;
+  }
+}
+
+/* 自定义样式扩展 */
+body {
+  @apply bg-gray-50 font-sans;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow card-shadow card-hover overflow-hidden;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg transition-all;
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-white shadow hover:shadow-md;
+}
+
+.btn-secondary {
+  @apply border border-gray-300 hover:bg-gray-50 text-gray-700;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none;
+}
+
+.status-badge {
+  @apply px-2 py-1 text-xs font-medium rounded-full text-white;
+}
