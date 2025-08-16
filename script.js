@@ -299,12 +299,14 @@ function createCompanyCard(company) {
       </div>
     ` : ''}
     
-    <div class="flex gap-2">
-      <button onclick="editCompany('${company.id}')" class="flex-1 bg-primary text-white py-2 px-3 rounded-lg hover:bg-primary/90 transition-all text-sm">
-        <i class="fa fa-edit mr-1"></i>编辑
+    <div class="flex gap-2 justify-end mt-auto">
+      <button onclick="editCompany('${company.id}')" 
+              class="bg-primary text-white py-1.5 px-2.5 rounded-md hover:bg-primary/90 transition-all text-xs font-medium">
+        <i class="fa fa-edit"></i>
       </button>
-      <button onclick="deleteCompany('${company.id}')" class="flex-1 bg-red-500 text-white py-2 px-3 rounded-lg hover:bg-red-600 transition-all text-sm">
-        <i class="fa fa-trash mr-1"></i>删除
+      <button onclick="deleteCompany('${company.id}')" 
+              class="bg-red-500 text-white py-1.5 px-2.5 rounded-md hover:bg-red-600 transition-all text-xs font-medium">
+        <i class="fa fa-trash"></i>
       </button>
     </div>
   `;
