@@ -1,4 +1,4 @@
-// script.js - 秋招求职助手主逻辑文件
+// script.js - 秋招求职助手主逻辑文件（含批量删除功能）
 
 // 状态文本映射
 const statusTextMap = {
@@ -26,6 +26,8 @@ const statusColorMap = {
 let companies = JSON.parse(localStorage.getItem('autumnRecruitmentCompanies')) || [];
 let currentFilter = 'all';
 let sortOrder = 'asc'; // 'asc' 或 'desc'
+let isBatchMode = false;
+let selectedCompanies = new Set();
 
 // DOM 元素
 const companyListEl = document.getElementById('companyList');
@@ -42,6 +44,9 @@ const sortByDateAsc = document.getElementById('sortByDateAsc');
 const sortByDateDesc = document.getElementById('sortByDateDesc');
 const totalCountEl = document.getElementById('totalCount');
 const clearAllBtn = document.getElementById('clearAllBtn');
+const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+const exitBatchModeBtn = document.getElementById('exitBatchModeBtn');
+const enterBatchModeBtn = document.getElementById('enterBatchModeBtn');
 
 // 初始化图表
 let statusChart;
@@ -140,6 +145,26 @@ function setupEventListeners() {
           updateStatusChart();
         }
       });
+    }
+  });
+
+  // 批量删除相关事件
+  enterBatchModeBtn.addEventListener('click', () => {
+    enterBatchMode();
+  });
+
+  exitBatchModeBtn.addEventListener('click', () => {
+    exitBatchMode();
+  });
+
+  batchDeleteBtn.addEventListener('click', () => {
+    performBatchDelete();
+  });
+
+  // 键盘ESC退出批量模式
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isBatchMode) {
+      exitBatchMode();
     }
   });
 }
@@ -257,8 +282,8 @@ function renderCompanyList() {
       <div class="col-span-full flex justify-center items-center py-16 text-gray-500">
         <div class="text-center">
           <i class="fa fa-file-text-o text-5xl mb-4 opacity-30"></i>
-          <p>还没有添加任何公司记录</p>
-          <p class="mt-2">点击"添加公司"按钮开始记录你的秋招历程</p>
+          <p>${isBatchMode ? '没有可选择的公司' : '还没有添加任何公司记录'}</p>
+          <p class="mt-2">${isBatchMode ? '退出删除模式后可继续添加' : '点击"添加公司"按钮开始记录你的秋招历程'}</p>
         </div>
       </div>
     `;
@@ -275,56 +300,193 @@ function renderCompanyList() {
 // 创建公司卡片
 function createCompanyCard(company) {
   const card = document.createElement('div');
-  card.className = 'bg-white rounded-xl shadow p-6 card-shadow card-hover';
+  const isSelected = selectedCompanies.has(company.id);
+  
+  let cardClasses = 'bg-white rounded-xl shadow-lg p-5 card-shadow flex flex-col h-full min-h-[200px] transition-all duration-200';
+  if (isBatchMode) {
+    cardClasses += ' cursor-pointer hover:shadow-xl';
+    if (isSelected) {
+      cardClasses += ' ring-2 ring-red-500 ring-offset-2';
+    }
+  } else {
+    cardClasses += ' card-hover';
+  }
+  
+  card.className = cardClasses;
+  
+  if (isBatchMode) {
+    card.addEventListener('click', () => toggleCompanySelection(company.id));
+  }
+  
+  let checkboxHtml = '';
+  if (isBatchMode) {
+    checkboxHtml = `
+      <div class="flex items-start mb-3">
+        <input type="checkbox" 
+               id="select-${company.id}"
+               class="w-5 h-5 text-red-600 rounded mt-1 mr-3 flex-shrink-0"
+               ${isSelected ? 'checked' : ''}
+               onchange="toggleCompanySelection('${company.id}')"
+               onclick="event.stopPropagation()">
+        <div class="flex-1">
+    `;
+  }
+  
+  let checkboxClose = isBatchMode ? '</div></div>' : '';
+  
   card.innerHTML = `
-    <div class="flex justify-between items-start mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">${company.name}</h3>
-      <span class="px-2 py-1 rounded-full text-xs text-white ${statusColorMap[company.status]}">${statusTextMap[company.status]}</span>
+    ${checkboxHtml}
+    <div class="flex-1 flex flex-col">
+      <div class="flex justify-between items-start mb-3 gap-3">
+        <h3 class="text-lg font-semibold text-gray-800 break-words flex-1 min-w-0" title="${company.name}">
+          ${company.name}
+        </h3>
+        <span class="px-2 py-1 rounded-full text-xs font-medium text-white ${statusColorMap[company.status]} flex-shrink-0">
+          ${statusTextMap[company.status]}
+        </span>
+      </div>
+      
+      ${company.interviewTime ? `
+        <div class="mb-2">
+          <p class="text-sm text-gray-600 flex items-center">
+            <i class="fa fa-calendar mr-2 text-gray-400"></i>
+            <span>${formatDateTime(company.interviewTime)}</span>
+          </p>
+        </div>
+      ` : ''}
+      
+      ${company.interviewLink ? `
+        <div class="mb-2">
+          <a href="${company.interviewLink}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+            <i class="fa fa-link mr-2 text-gray-400"></i>
+            <span class="truncate">面试链接</span>
+          </a>
+        </div>
+      ` : ''}
+      
+      ${company.summary ? `
+        <div class="mb-2">
+          <p class="text-sm text-gray-600 line-clamp-2" title="${company.summary}">
+            ${company.summary}
+          </p>
+        </div>
+      ` : ''}
+      
+      ${company.summaryLink ? `
+        <div class="mb-3">
+          <a href="${company.summaryLink}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+            <i class="fa fa-file-text-o mr-2 text-gray-400"></i>
+            <span class="truncate">总结链接</span>
+          </a>
+        </div>
+      ` : ''}
     </div>
     
-    ${company.interviewTime ? `
-      <div class="mb-3">
-        <p class="text-sm text-gray-600">
-          <i class="fa fa-calendar mr-1"></i>
-          ${formatDateTime(company.interviewTime)}
-        </p>
+    ${!isBatchMode ? `
+      <div class="mt-auto pt-3 border-t border-gray-100 flex gap-2 justify-end">
+        <button onclick="editCompany('${company.id}')" 
+                class="bg-primary text-white py-1.5 px-3 rounded-md hover:bg-primary/90 transition-all text-xs font-medium">
+          <i class="fa fa-edit mr-1"></i> 编辑
+        </button>
+        <button onclick="deleteCompany('${company.id}')" 
+                class="bg-red-500 text-white py-1.5 px-3 rounded-md hover:bg-red-600 transition-all text-xs font-medium">
+          <i class="fa fa-trash mr-1"></i> 删除
+        </button>
       </div>
     ` : ''}
-    
-    ${company.interviewLink ? `
-      <div class="mb-3">
-        <a href="${company.interviewLink}" target="_blank" class="text-sm text-primary hover:underline">
-          <i class="fa fa-link mr-1"></i>面试链接
-        </a>
-      </div>
-    ` : ''}
-    
-    ${company.summary ? `
-      <div class="mb-3">
-        <p class="text-sm text-gray-600">${company.summary}</p>
-      </div>
-    ` : ''}
-    
-    ${company.summaryLink ? `
-      <div class="mb-4">
-        <a href="${company.summaryLink}" target="_blank" class="text-sm text-primary hover:underline">
-          <i class="fa fa-file-text-o mr-1"></i>总结链接
-        </a>
-      </div>
-    ` : ''}
-    
-    <div class="flex gap-2 justify-end mt-auto">
-      <button onclick="editCompany('${company.id}')" 
-              class="bg-primary text-white py-1.5 px-2.5 rounded-md hover:bg-primary/90 transition-all text-xs font-medium">
-        <i class="fa fa-edit"></i>
-      </button>
-      <button onclick="deleteCompany('${company.id}')" 
-              class="bg-red-500 text-white py-1.5 px-2.5 rounded-md hover:bg-red-600 transition-all text-xs font-medium">
-        <i class="fa fa-trash"></i>
-      </button>
-    </div>
+    ${checkboxClose}
   `;
+  
   return card;
+}
+
+// 批量删除相关函数
+function enterBatchMode() {
+  isBatchMode = true;
+  selectedCompanies.clear();
+  
+  // 显示/隐藏按钮
+  enterBatchModeBtn.classList.add('hidden');
+  exitBatchModeBtn.classList.remove('hidden');
+  batchDeleteBtn.classList.remove('hidden');
+  
+  // 更新UI
+  renderCompanyList();
+  updateBatchDeleteButton();
+}
+
+function exitBatchMode() {
+  isBatchMode = false;
+  selectedCompanies.clear();
+  
+  // 显示/隐藏按钮
+  enterBatchModeBtn.classList.remove('hidden');
+  exitBatchModeBtn.classList.add('hidden');
+  batchDeleteBtn.classList.add('hidden');
+  
+  // 更新UI
+  renderCompanyList();
+}
+
+function toggleCompanySelection(companyId) {
+  if (selectedCompanies.has(companyId)) {
+    selectedCompanies.delete(companyId);
+  } else {
+    selectedCompanies.add(companyId);
+  }
+  updateBatchDeleteButton();
+}
+
+function updateBatchDeleteButton() {
+  const count = selectedCompanies.size;
+  if (count > 0) {
+    batchDeleteBtn.textContent = `删除选中 (${count})`;
+    batchDeleteBtn.disabled = false;
+    batchDeleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  } else {
+    batchDeleteBtn.textContent = '批量删除';
+    batchDeleteBtn.disabled = true;
+    batchDeleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+}
+
+function performBatchDelete() {
+  const count = selectedCompanies.size;
+  if (count === 0) return;
+  
+  Swal.fire({
+    title: '确认批量删除',
+    text: `确定要删除选中的 ${count} 条记录吗？此操作不可恢复！`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '确定删除',
+    cancelButtonText: '取消'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // 执行删除操作
+      companies = companies.filter(c => !selectedCompanies.has(c.id));
+      saveToLocalStorage();
+      
+      // 退出批量模式
+      exitBatchMode();
+      
+      // 更新UI
+      renderCompanyList();
+      updateTotalCount();
+      updateStatusChart();
+      
+      // 显示成功提示
+      Swal.fire({
+        title: '删除成功',
+        text: `已删除 ${count} 条记录`,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  });
 }
 
 // 编辑公司

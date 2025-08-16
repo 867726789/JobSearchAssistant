@@ -135,8 +135,19 @@
         </div>
         
         <div class="mt-4 flex justify-between items-center">
-          <div class="text-gray-600">
-            共 <span id="totalCount" class="font-semibold">0</span> 条记录
+          <div class="flex items-center gap-3">
+            <div class="text-gray-600">
+              共 <span id="totalCount" class="font-semibold">0</span> 条记录
+            </div>
+            <button id="batchDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg hidden">
+              <i class="fa fa-trash mr-2"></i> 批量删除
+            </button>
+            <button id="exitBatchModeBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg hidden">
+              <i class="fa fa-times mr-2"></i> 退出删除模式
+            </button>
+            <button id="enterBatchModeBtn" class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg">
+              <i class="fa fa-check-square-o mr-2"></i> 进入删除模式
+            </button>
           </div>
           <button id="clearAllBtn" class="text-gray-500 hover:text-gray-700 text-sm transition-all flex items-center">
             <i class="fa fa-trash-o mr-1"></i> 清空所有记录
@@ -146,7 +157,7 @@
     </div>
     
     <!-- 公司列表 -->
-    <div id="companyList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div id="companyList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       <!-- 公司卡片将通过JavaScript动态生成 -->
       <div class="col-span-full flex justify-center items-center py-16 text-gray-500">
         <div class="text-center">
@@ -221,7 +232,7 @@
   
   <!-- 隐藏的文件输入用于导入Excel -->
   <input type="file" id="excelFileInput" accept=".xlsx,.xls" class="hidden">
-  
+
   <!-- 引入JavaScript -->
   <script src="script.js"></script>
 </body>
