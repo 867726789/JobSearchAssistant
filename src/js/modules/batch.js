@@ -12,7 +12,9 @@ export class BatchManager {
     document.getElementById('exitBatchModeBtn').classList.remove('hidden');
     document.getElementById('batchDeleteBtn').classList.remove('hidden');
     
-    window.app.render();
+    if (window.app) {
+      window.app.render();
+    }
     this.updateBatchDeleteButton();
   }
 
@@ -24,7 +26,9 @@ export class BatchManager {
     document.getElementById('exitBatchModeBtn').classList.add('hidden');
     document.getElementById('batchDeleteBtn').classList.add('hidden');
     
-    window.app.render();
+    if (window.app) {
+      window.app.render();
+    }
   }
 
   toggleCompanySelection(companyId) {
@@ -34,7 +38,9 @@ export class BatchManager {
       this.selectedCompanies.add(companyId);
     }
     this.updateBatchDeleteButton();
-    window.app.render();
+    if (window.app) {
+      window.app.render();
+    }
   }
 
   updateBatchDeleteButton() {
@@ -68,19 +74,21 @@ export class BatchManager {
     });
 
     if (confirmed.isConfirmed) {
-      window.app.companies = window.app.companies.filter(c => !this.selectedCompanies.has(c.id));
-      await window.app.storage.saveCompanies(window.app.companies);
-      
-      this.exitBatchMode();
-      window.app.render();
-      
-      Swal.fire({
-        title: '删除成功',
-        text: `已删除 ${count} 条记录`,
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-      });
+      if (window.app) {
+        window.app.companies = window.app.companies.filter(c => !this.selectedCompanies.has(c.id));
+        await window.app.storage.saveCompanies(window.app.companies);
+        
+        this.exitBatchMode();
+        window.app.render();
+        
+        Swal.fire({
+          title: '删除成功',
+          text: `已删除 ${count} 条记录`,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
     }
   }
 

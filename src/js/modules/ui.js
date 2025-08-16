@@ -54,7 +54,7 @@ export class UIManager {
                  id="select-${company.id}"
                  class="w-5 h-5 text-red-600 rounded mt-1 mr-3 flex-shrink-0 cursor-pointer"
                  ${isSelected ? 'checked' : ''}
-                 onchange="window.toggleCompanySelection?.('${company.id}')"
+                 onchange="window.toggleCompanySelection('${company.id}')"
                  onclick="event.stopPropagation()">
           <div class="flex-1">
       `;
@@ -83,11 +83,11 @@ export class UIManager {
       
       ${!isBatchMode ? `
         <div class="mt-auto pt-3 border-t border-gray-100 flex gap-2 justify-end">
-          <button onclick="window.editCompany?.('${company.id}')" 
+          <button onclick="window.editCompany('${company.id}')" 
                   class="bg-primary text-white py-1.5 px-3 rounded-md hover:bg-primary/90 transition-all text-xs font-medium">
             <i class="fa fa-edit mr-1"></i> 编辑
           </button>
-          <button onclick="window.deleteCompany?.('${company.id}')" 
+          <button onclick="window.deleteCompany('${company.id}')" 
                   class="bg-red-500 text-white py-1.5 px-3 rounded-md hover:bg-red-600 transition-all text-xs font-medium">
             <i class="fa fa-trash mr-1"></i> 删除
           </button>
@@ -102,8 +102,8 @@ export class UIManager {
         const checkbox = card.querySelector(`#select-${company.id}`);
         if (checkbox) {
           checkbox.checked = !checkbox.checked;
+          checkbox.dispatchEvent(new Event('change'));
         }
-        window.toggleCompanySelection?.(company.id);
       });
     }
 

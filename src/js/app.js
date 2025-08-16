@@ -18,12 +18,18 @@ class JobSearchApp {
     
     this.companies = [];
     this.statusChart = null;
+    
+    // 暴露全局函数
+    this.exposeGlobalFunctions();
   }
 
   async init() {
     await this.loadData();
     this.setupEventListeners();
     this.render();
+    
+    // 将应用实例暴露到全局
+    window.app = this;
   }
 
   async loadData() {
@@ -80,27 +86,93 @@ class JobSearchApp {
     });
   }
 
+  exposeGlobalFunctions() {
+    // 暴露删除模式相关函数
+    window.toggleCompanySelection = (companyId) => {
+      this.batch.toggleCompanySelection(companyId);
+    };
+
+    // 暴露公司操作函数
+    window.editCompany = (companyId) => {
+      const company = this.companies.find(c => c.id === companyId);
+      if (company) {
+        this.ui.openModal(company);
+      }
+    };
+
+    window.deleteCompany = async (companyId) => {
+      const confirmed = await this.ui.showConfirmDialog('确认删除', '确定要删除这条记录吗？此操作不可恢复！');
+      if (confirmed) {
+        this.companies = this.companyManager.deleteCompany(this.companies, companyId);
+        await this.storage.saveCompanies(this.companies);
+        this.render();
+        
+        Swal.fire({
+          title: '删除成功',
+          text: '已删除该记录',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    };
+  }
+
   async handleFormSubmit() {
-    const companyData = this.ui.getFormData();
-    if (companyData.id) {
-      await this.companyManager.updateCompany(companyData);
-    } else {
-      await this.companyManager.addCompany(companyData);
+    try {
+      const companyData = this.ui.getFormData();
+      
+      // 验证必填字段
+      if (!companyData.name.trim()) {
+        Swal.fire({
+          title: '错误',
+          text: '请输入公司名称',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        return;
+      }
+
+      if (companyData.id) {
+        // 编辑现有公司
+        this.companies = this.companyManager.updateCompany(this.companies, companyData);
+      } else {
+        // 添加新公司
+        this.companies = this.companyManager.addCompany(this.companies, companyData);
+      }
+      
+      await this.storage.saveCompanies(this.companies);
+      this.render();
+      this.ui.closeModal();
+      
+      Swal.fire({
+        title: '保存成功',
+        text: companyData.id ? '已更新公司记录' : '已添加新公司',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('保存失败:', error);
+      Swal.fire({
+        title: '保存失败',
+        text: '请检查输入数据是否正确',
+        icon: 'error',
+        timer: 2000,
+        showConfirmButton: false
+      });
     }
-    
-    await this.storage.saveCompanies(this.companies);
-    this.render();
-    this.ui.closeModal();
   }
 
   filterCompanies(status) {
     const filtered = this.companyManager.filterCompanies(this.companies, status);
-    this.ui.renderCompanyList(filtered);
+    this.ui.renderCompanyList(filtered, this.batch.isBatchMode, this.batch.selectedCompanies);
   }
 
   sortCompanies(order) {
     const sorted = this.companyManager.sortCompanies(this.companies, order);
-    this.ui.renderCompanyList(sorted);
+    this.ui.renderCompanyList(sorted, this.batch.isBatchMode, this.batch.selectedCompanies);
   }
 
   async clearAllCompanies() {
@@ -114,7 +186,7 @@ class JobSearchApp {
 
   render() {
     this.ui.updateTotalCount(this.companies.length);
-    this.ui.renderCompanyList(this.companies);
+    this.ui.renderCompanyList(this.companies, this.batch.isBatchMode, this.batch.selectedCompanies);
     this.chart.updateStatusChart(this.companies);
   }
 }
