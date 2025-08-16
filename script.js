@@ -306,7 +306,16 @@ function createCompanyCard(company) {
   card.className = cardClasses;
   
   if (isBatchMode) {
-    card.addEventListener('click', () => toggleCompanySelection(company.id));
+    card.addEventListener('click', (e) => {
+      // 如果点击的是复选框本身，不重复处理
+      if (e.target.type === 'checkbox') return;
+      
+      const checkbox = card.querySelector(`#select-${company.id}`);
+      if (checkbox) {
+        checkbox.checked = !checkbox.checked;
+      }
+      toggleCompanySelection(company.id);
+    });
   }
   
   let checkboxHtml = '';
@@ -315,7 +324,7 @@ function createCompanyCard(company) {
       <div class="flex items-start mb-3">
         <input type="checkbox" 
                id="select-${company.id}"
-               class="w-5 h-5 text-red-600 rounded mt-1 mr-3 flex-shrink-0"
+               class="w-5 h-5 text-red-600 rounded mt-1 mr-3 flex-shrink-0 cursor-pointer"
                ${isSelected ? 'checked' : ''}
                onchange="toggleCompanySelection('${company.id}')"
                onclick="event.stopPropagation()">
@@ -649,6 +658,9 @@ function toggleCompanySelection(companyId) {
     selectedCompanies.add(companyId);
   }
   updateBatchDeleteButton();
+  
+  // 重新渲染列表以更新UI状态
+  renderCompanyList();
 }
 
 function updateBatchDeleteButton() {
