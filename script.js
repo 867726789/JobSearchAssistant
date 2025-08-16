@@ -1,87 +1,100 @@
-// script.js - 秋招求职助手主逻辑文件（含批量删除功能）
-
-// 状态文本映射
-const statusTextMap = {
-  'applied': '已投递',
-  'interview1': '一面',
-  'interview2': '二面',
-  'interview3': '三面',
-  'interview4': '四面',
-  'hr': 'HR面',
-  'rejected': '已挂'
-};
-
-// 状态颜色映射
-const statusColorMap = {
-  'applied': 'bg-status-applied',
-  'interview1': 'bg-status-interview1',
-  'interview2': 'bg-status-interview2',
-  'interview3': 'bg-status-interview3',
-  'interview4': 'bg-status-interview4',
-  'hr': 'bg-status-hr',
-  'rejected': 'bg-status-rejected'
-};
-
-// 初始化数据 - 从本地存储读取或使用空数组
-let companies = JSON.parse(localStorage.getItem('autumnRecruitmentCompanies')) || [];
-let currentFilter = 'all';
-let sortOrder = 'asc'; // 'asc' 或 'desc'
+// 全局变量
+let companies = [];
+let statusChart = null;
 let isBatchMode = false;
 let selectedCompanies = new Set();
 
-// DOM 元素
+// 状态映射
+const statusTextMap = {
+  applied: '已投递',
+  interview1: '一面',
+  interview2: '二面',
+  interview3: '三面',
+  interview4: '四面',
+  hr: 'HR面',
+  rejected: '已挂'
+};
+
+const statusColorMap = {
+  applied: 'bg-status-applied',
+  interview1: 'bg-status-interview1',
+  interview2: 'bg-status-interview2',
+  interview3: 'bg-status-interview3',
+  interview4: 'bg-status-interview4',
+  hr: 'bg-status-hr',
+  rejected: 'bg-status-rejected'
+};
+
+// DOM元素
 const companyListEl = document.getElementById('companyList');
-const addCompanyBtn = document.getElementById('addCompanyBtn');
-const exportExcelBtn = document.getElementById('exportExcelBtn');
-const importExcelBtn = document.getElementById('importExcelBtn');
+const totalCountEl = document.getElementById('totalCount');
 const companyModal = document.getElementById('companyModal');
-const closeModalBtn = document.getElementById('closeModalBtn');
-const cancelBtn = document.getElementById('cancelBtn');
 const companyForm = document.getElementById('companyForm');
 const modalTitle = document.getElementById('modalTitle');
-const statusFilters = document.querySelectorAll('.status-filter');
-const sortByDateAsc = document.getElementById('sortByDateAsc');
-const sortByDateDesc = document.getElementById('sortByDateDesc');
-const totalCountEl = document.getElementById('totalCount');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const batchDeleteBtn = document.getElementById('batchDeleteBtn');
-const exitBatchModeBtn = document.getElementById('exitBatchModeBtn');
+const companyIdInput = document.getElementById('companyId');
+const companyNameInput = document.getElementById('companyName');
+const statusInput = document.getElementById('status');
+const interviewStartTimeInput = document.getElementById('interviewStartTime');
+const interviewEndTimeInput = document.getElementById('interviewEndTime');
+const interviewLinkInput = document.getElementById('interviewLink');
+const summaryInput = document.getElementById('summary');
+const summaryLinkInput = document.getElementById('summaryLink');
+
+// 批量删除相关元素
 const enterBatchModeBtn = document.getElementById('enterBatchModeBtn');
+const exitBatchModeBtn = document.getElementById('exitBatchModeBtn');
+const batchDeleteBtn = document.getElementById('batchDeleteBtn');
 
-// 初始化图表
-let statusChart;
-
-// 初始化应用
-function initApp() {
-  // 尝试从Excel导入数据，如果没有Excel则使用localStorage
-  importFromExcelOnLoad();
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromLocalStorage();
   renderCompanyList();
   updateTotalCount();
   initStatusChart();
   setupEventListeners();
-}
+});
 
 // 设置事件监听器
 function setupEventListeners() {
   // 添加公司按钮
-  addCompanyBtn.addEventListener('click', () => {
+  document.getElementById('addCompanyBtn').addEventListener('click', () => {
     openModal();
   });
 
-  // 导出Excel按钮
-  exportExcelBtn.addEventListener('click', exportToExcel);
+  // 关闭模态框
+  document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
-  // 导入Excel按钮
-  importExcelBtn.addEventListener('click', () => {
-    document.getElementById('excelFileInput').click();
+  // 表单提交
+  companyForm.addEventListener('submit', handleFormSubmit);
+
+  // 状态筛选
+  document.querySelectorAll('.status-filter').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('ring-2', 'ring-primary/50'));
+      e.target.classList.add('ring-2', 'ring-primary/50');
+      filterCompanies(e.target.dataset.status);
+    });
   });
 
-  // 监听文件选择
-  document.getElementById('excelFileInput').addEventListener('change', handleExcelFileSelect);
+  // 排序
+  document.getElementById('sortByDateAsc').addEventListener('click', () => sortCompanies('asc'));
+  document.getElementById('sortByDateDesc').addEventListener('click', () => sortCompanies('desc'));
 
-  // 关闭模态框
-  closeModalBtn.addEventListener('click', closeModal);
-  cancelBtn.addEventListener('click', closeModal);
+  // 批量删除
+  enterBatchModeBtn.addEventListener('click', enterBatchMode);
+  exitBatchModeBtn.addEventListener('click', exitBatchMode);
+  batchDeleteBtn.addEventListener('click', performBatchDelete);
+
+  // 清空所有
+  document.getElementById('clearAllBtn').addEventListener('click', clearAllCompanies);
+
+  // Excel导入导出
+  document.getElementById('importExcelBtn').addEventListener('click', () => {
+    document.getElementById('excelFileInput').click();
+  });
+  document.getElementById('exportExcelBtn').addEventListener('click', exportToExcel);
+  document.getElementById('excelFileInput').addEventListener('change', handleExcelFileSelect);
 
   // 点击模态框外部关闭
   companyModal.addEventListener('click', (e) => {
@@ -89,160 +102,88 @@ function setupEventListeners() {
       closeModal();
     }
   });
+}
 
-  // 提交表单
-  companyForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    saveCompany();
-  });
-
-  // 状态筛选
-  statusFilters.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // 更新活跃状态
-      statusFilters.forEach(b => b.classList.remove('ring-2', 'ring-primary/50'));
-      btn.classList.add('ring-2', 'ring-primary/50');
-
-      currentFilter = btn.dataset.status;
-      renderCompanyList();
+// 快速设置面试时间
+function setQuickDuration(minutes) {
+  const startTime = interviewStartTimeInput.value;
+  if (!startTime) {
+    Swal.fire({
+      title: '提示',
+      text: '请先选择开始时间',
+      icon: 'info',
+      timer: 1500,
+      showConfirmButton: false
     });
-  });
+    return;
+  }
 
-  // 排序
-  sortByDateAsc.addEventListener('click', () => {
-    sortOrder = 'asc';
-    renderCompanyList();
-    sortByDateAsc.classList.add('ring-2', 'ring-primary/50');
-    sortByDateDesc.classList.remove('ring-2', 'ring-primary/50');
-  });
-
-  sortByDateDesc.addEventListener('click', () => {
-    sortOrder = 'desc';
-    renderCompanyList();
-    sortByDateDesc.classList.add('ring-2', 'ring-primary/50');
-    sortByDateAsc.classList.remove('ring-2', 'ring-primary/50');
-  });
-
-  // 清空所有记录
-  clearAllBtn.addEventListener('click', () => {
-    if (companies.length > 0) {
-      Swal.fire({
-        title: '确认清空记录',
-        text: "确定要清空所有记录吗？此操作不可恢复！",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: '确定',
-        cancelButtonText: '取消'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // 用户点击"确定"后执行清空操作
-          companies = [];
-          saveToLocalStorage();
-          renderCompanyList();
-          updateTotalCount();
-          updateStatusChart();
-        }
-      });
-    }
-  });
-
-  // 批量删除相关事件
-  enterBatchModeBtn.addEventListener('click', () => {
-    enterBatchMode();
-  });
-
-  exitBatchModeBtn.addEventListener('click', () => {
-    exitBatchMode();
-  });
-
-  batchDeleteBtn.addEventListener('click', () => {
-    performBatchDelete();
-  });
-
-  // 键盘ESC退出批量模式
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isBatchMode) {
-      exitBatchMode();
-    }
-  });
+  const start = new Date(startTime);
+  const end = new Date(start.getTime() + minutes * 60000);
+  
+  // 格式化结束时间为datetime-local格式
+  const year = end.getFullYear();
+  const month = String(end.getMonth() + 1).padStart(2, '0');
+  const day = String(end.getDate()).padStart(2, '0');
+  const hours = String(end.getHours()).padStart(2, '0');
+  const minutesStr = String(end.getMinutes()).padStart(2, '0');
+  
+  interviewEndTimeInput.value = `${year}-${month}-${day}T${hours}:${minutesStr}`;
 }
 
 // 打开模态框
 function openModal(company = null) {
-  // 重置表单
-  companyForm.reset();
-  document.getElementById('companyId').value = '';
-
   if (company) {
-    // 编辑模式
-    modalTitle.textContent = `编辑 ${company.name} 记录`;
-    document.getElementById('companyId').value = company.id;
-    document.getElementById('companyName').value = company.name;
-    document.getElementById('status').value = company.status;
-    document.getElementById('interviewTime').value = company.interviewTime || '';
-    document.getElementById('interviewLink').value = company.interviewLink || '';
-    document.getElementById('summary').value = company.summary || '';
-    document.getElementById('summaryLink').value = company.summaryLink || '';
+    modalTitle.textContent = '编辑公司记录';
+    companyIdInput.value = company.id;
+    companyNameInput.value = company.name;
+    statusInput.value = company.status;
+    interviewStartTimeInput.value = company.interviewStartTime || '';
+    interviewEndTimeInput.value = company.interviewEndTime || '';
+    interviewLinkInput.value = company.interviewLink || '';
+    summaryInput.value = company.summary || '';
+    summaryLinkInput.value = company.summaryLink || '';
   } else {
-    // 添加模式
     modalTitle.textContent = '添加公司记录';
+    companyForm.reset();
+    companyIdInput.value = '';
   }
-
   companyModal.classList.remove('hidden');
-  // 添加动画效果
-  setTimeout(() => {
-    companyModal.querySelector('.modal-transition').classList.add('scale-100');
-    companyModal.querySelector('.modal-transition').classList.remove('scale-95');
-  }, 10);
+  document.body.style.overflow = 'hidden';
 }
 
 // 关闭模态框
 function closeModal() {
-  companyModal.querySelector('.modal-transition').classList.add('scale-95');
-  companyModal.querySelector('.modal-transition').classList.remove('scale-100');
-  setTimeout(() => {
-    companyModal.classList.add('hidden');
-  }, 200);
+  companyModal.classList.add('hidden');
+  document.body.style.overflow = 'auto';
 }
 
-// 保存公司信息
-function saveCompany() {
-  const companyId = document.getElementById('companyId').value;
-  const companyName = document.getElementById('companyName').value;
-  const status = document.getElementById('status').value;
-  const interviewTime = document.getElementById('interviewTime').value;
-  const interviewLink = document.getElementById('interviewLink').value;
-  const summary = document.getElementById('summary').value;
-  const summaryLink = document.getElementById('summaryLink').value;
-
-  if (!companyName || !status) {
-    alert('请填写必填项');
-    return;
-  }
-
+// 处理表单提交
+function handleFormSubmit(e) {
+  e.preventDefault();
+  
   const companyData = {
-    name: companyName,
-    status: status,
-    interviewTime: interviewTime,
-    interviewLink: interviewLink,
-    summary: summary,
-    summaryLink: summaryLink,
+    name: companyNameInput.value.trim(),
+    status: statusInput.value,
+    interviewStartTime: interviewStartTimeInput.value,
+    interviewEndTime: interviewEndTimeInput.value,
+    interviewLink: interviewLinkInput.value.trim(),
+    summary: summaryInput.value.trim(),
+    summaryLink: summaryLinkInput.value.trim(),
     createdAt: new Date().toISOString()
   };
 
-  if (companyId) {
+  if (companyIdInput.value) {
     // 编辑现有公司
-    const index = companies.findIndex(c => c.id === companyId);
+    const index = companies.findIndex(c => c.id === companyIdInput.value);
     if (index !== -1) {
-      companyData.id = companyId;
+      companyData.id = companyIdInput.value;
       companyData.createdAt = companies[index].createdAt;
       companies[index] = companyData;
     }
   } else {
     // 添加新公司
-    companyData.id = Date.now().toString();
+    companyData.id = Date.now().toString() + Math.floor(Math.random() * 1000);
     companies.push(companyData);
   }
 
@@ -253,44 +194,37 @@ function saveCompany() {
   closeModal();
 }
 
+// 从本地存储加载数据
+function loadFromLocalStorage() {
+  const saved = localStorage.getItem('autumnRecruitmentCompanies');
+  if (saved) {
+    try {
+      companies = JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse saved data', e);
+      companies = [];
+    }
+  }
+}
+
 // 渲染公司列表
 function renderCompanyList() {
-  let filteredCompanies = companies;
-
-  // 应用筛选
-  if (currentFilter !== 'all') {
-    filteredCompanies = companies.filter(company => company.status === currentFilter);
-  }
-
-  // 应用排序
-  filteredCompanies = [...filteredCompanies].sort((a, b) => {
-    if (!a.interviewTime && !b.interviewTime) return 0;
-    if (!a.interviewTime) return 1;
-    if (!b.interviewTime) return -1;
-
-    const dateA = new Date(a.interviewTime);
-    const dateB = new Date(b.interviewTime);
-
-    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-  });
-
-  // 清空列表
-  companyListEl.innerHTML = '';
-
+  const filteredCompanies = getFilteredCompanies();
+  
   if (filteredCompanies.length === 0) {
     companyListEl.innerHTML = `
       <div class="col-span-full flex justify-center items-center py-16 text-gray-500">
         <div class="text-center">
           <i class="fa fa-file-text-o text-5xl mb-4 opacity-30"></i>
-          <p>${isBatchMode ? '没有可选择的公司' : '还没有添加任何公司记录'}</p>
-          <p class="mt-2">${isBatchMode ? '退出删除模式后可继续添加' : '点击"添加公司"按钮开始记录你的秋招历程'}</p>
+          <p>还没有添加任何公司记录</p>
+          <p class="mt-2">点击"添加公司"按钮开始记录你的秋招历程</p>
         </div>
       </div>
     `;
     return;
   }
 
-  // 渲染公司卡片
+  companyListEl.innerHTML = '';
   filteredCompanies.forEach(company => {
     const card = createCompanyCard(company);
     companyListEl.appendChild(card);
@@ -334,6 +268,32 @@ function createCompanyCard(company) {
   
   let checkboxClose = isBatchMode ? '</div></div>' : '';
   
+  // 处理面试时间段显示
+  let interviewTimeDisplay = '';
+  if (company.interviewStartTime) {
+    const startTime = formatDateTime(company.interviewStartTime);
+    if (company.interviewEndTime) {
+      const endTime = formatDateTime(company.interviewEndTime);
+      interviewTimeDisplay = `
+        <div class="mb-2">
+          <p class="text-sm text-gray-600 flex items-center">
+            <i class="fa fa-calendar mr-2 text-gray-400"></i>
+            <span>${startTime} - ${formatTimeOnly(company.interviewEndTime)}</span>
+          </p>
+        </div>
+      `;
+    } else {
+      interviewTimeDisplay = `
+        <div class="mb-2">
+          <p class="text-sm text-gray-600 flex items-center">
+            <i class="fa fa-calendar mr-2 text-gray-400"></i>
+            <span>${startTime}</span>
+          </p>
+        </div>
+      `;
+    }
+  }
+  
   card.innerHTML = `
     ${checkboxHtml}
     <div class="flex-1 flex flex-col">
@@ -346,14 +306,7 @@ function createCompanyCard(company) {
         </span>
       </div>
       
-      ${company.interviewTime ? `
-        <div class="mb-2">
-          <p class="text-sm text-gray-600 flex items-center">
-            <i class="fa fa-calendar mr-2 text-gray-400"></i>
-            <span>${formatDateTime(company.interviewTime)}</span>
-          </p>
-        </div>
-      ` : ''}
+      ${interviewTimeDisplay}
       
       ${company.interviewLink ? `
         <div class="mb-2">
@@ -400,93 +353,60 @@ function createCompanyCard(company) {
   return card;
 }
 
-// 批量删除相关函数
-function enterBatchMode() {
-  isBatchMode = true;
-  selectedCompanies.clear();
-  
-  // 显示/隐藏按钮
-  enterBatchModeBtn.classList.add('hidden');
-  exitBatchModeBtn.classList.remove('hidden');
-  batchDeleteBtn.classList.remove('hidden');
-  
-  // 更新UI
-  renderCompanyList();
-  updateBatchDeleteButton();
-}
-
-function exitBatchMode() {
-  isBatchMode = false;
-  selectedCompanies.clear();
-  
-  // 显示/隐藏按钮
-  enterBatchModeBtn.classList.remove('hidden');
-  exitBatchModeBtn.classList.add('hidden');
-  batchDeleteBtn.classList.add('hidden');
-  
-  // 更新UI
-  renderCompanyList();
-}
-
-function toggleCompanySelection(companyId) {
-  if (selectedCompanies.has(companyId)) {
-    selectedCompanies.delete(companyId);
-  } else {
-    selectedCompanies.add(companyId);
-  }
-  updateBatchDeleteButton();
-}
-
-function updateBatchDeleteButton() {
-  const count = selectedCompanies.size;
-  if (count > 0) {
-    batchDeleteBtn.textContent = `删除选中 (${count})`;
-    batchDeleteBtn.disabled = false;
-    batchDeleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-  } else {
-    batchDeleteBtn.textContent = '批量删除';
-    batchDeleteBtn.disabled = true;
-    batchDeleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
-  }
-}
-
-function performBatchDelete() {
-  const count = selectedCompanies.size;
-  if (count === 0) return;
-  
-  Swal.fire({
-    title: '确认批量删除',
-    text: `确定要删除选中的 ${count} 条记录吗？此操作不可恢复！`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: '确定删除',
-    cancelButtonText: '取消'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // 执行删除操作
-      companies = companies.filter(c => !selectedCompanies.has(c.id));
-      saveToLocalStorage();
-      
-      // 退出批量模式
-      exitBatchMode();
-      
-      // 更新UI
-      renderCompanyList();
-      updateTotalCount();
-      updateStatusChart();
-      
-      // 显示成功提示
-      Swal.fire({
-        title: '删除成功',
-        text: `已删除 ${count} 条记录`,
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-      });
-    }
+// 格式化时间（仅显示时间部分）
+function formatTimeOnly(dateTimeStr) {
+  const date = new Date(dateTimeStr);
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit'
   });
+}
+
+// 获取筛选后的公司列表
+function getFilteredCompanies() {
+  const activeFilter = document.querySelector('.status-filter.ring-2');
+  const status = activeFilter ? activeFilter.dataset.status : 'all';
+  
+  let filtered = status === 'all' ? [...companies] : companies.filter(c => c.status === status);
+  
+  // 按面试时间排序
+  const sortAscBtn = document.getElementById('sortByDateAsc');
+  const sortDescBtn = document.getElementById('sortByDateDesc');
+  
+  if (sortAscBtn.classList.contains('ring-2')) {
+    filtered.sort((a, b) => {
+      if (!a.interviewStartTime) return 1;
+      if (!b.interviewStartTime) return -1;
+      return new Date(a.interviewStartTime) - new Date(b.interviewStartTime);
+    });
+  } else if (sortDescBtn.classList.contains('ring-2')) {
+    filtered.sort((a, b) => {
+      if (!a.interviewStartTime) return 1;
+      if (!b.interviewStartTime) return -1;
+      return new Date(b.interviewStartTime) - new Date(a.interviewStartTime);
+    });
+  }
+  
+  return filtered;
+}
+
+// 筛选公司
+function filterCompanies(status) {
+  renderCompanyList();
+}
+
+// 排序公司
+function sortCompanies(order) {
+  document.getElementById('sortByDateAsc').classList.remove('ring-2', 'ring-primary/50');
+  document.getElementById('sortByDateDesc').classList.remove('ring-2', 'ring-primary/50');
+  
+  if (order === 'asc') {
+    document.getElementById('sortByDateAsc').classList.add('ring-2', 'ring-primary/50');
+  } else {
+    document.getElementById('sortByDateDesc').classList.add('ring-2', 'ring-primary/50');
+  }
+  
+  renderCompanyList();
 }
 
 // 编辑公司
@@ -510,7 +430,6 @@ function deleteCompany(id) {
     cancelButtonText: '取消'
   }).then((result) => {
     if (result.isConfirmed) {
-      // 用户点击"确定"后执行清空操作
       companies = companies.filter(c => c.id !== id);
       saveToLocalStorage();
       renderCompanyList();
@@ -621,6 +540,109 @@ function formatDateTime(dateTimeStr) {
   });
 }
 
+// 批量删除相关函数
+function enterBatchMode() {
+  isBatchMode = true;
+  selectedCompanies.clear();
+  
+  enterBatchModeBtn.classList.add('hidden');
+  exitBatchModeBtn.classList.remove('hidden');
+  batchDeleteBtn.classList.remove('hidden');
+  
+  renderCompanyList();
+  updateBatchDeleteButton();
+}
+
+function exitBatchMode() {
+  isBatchMode = false;
+  selectedCompanies.clear();
+  
+  enterBatchModeBtn.classList.remove('hidden');
+  exitBatchModeBtn.classList.add('hidden');
+  batchDeleteBtn.classList.add('hidden');
+  
+  renderCompanyList();
+}
+
+function toggleCompanySelection(companyId) {
+  if (selectedCompanies.has(companyId)) {
+    selectedCompanies.delete(companyId);
+  } else {
+    selectedCompanies.add(companyId);
+  }
+  updateBatchDeleteButton();
+}
+
+function updateBatchDeleteButton() {
+  const count = selectedCompanies.size;
+  if (count > 0) {
+    batchDeleteBtn.textContent = `删除选中 (${count})`;
+    batchDeleteBtn.disabled = false;
+    batchDeleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  } else {
+    batchDeleteBtn.textContent = '批量删除';
+    batchDeleteBtn.disabled = true;
+    batchDeleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+}
+
+function performBatchDelete() {
+  const count = selectedCompanies.size;
+  if (count === 0) return;
+  
+  Swal.fire({
+    title: '确认批量删除',
+    text: `确定要删除选中的 ${count} 条记录吗？此操作不可恢复！`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '确定删除',
+    cancelButtonText: '取消'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      companies = companies.filter(c => !selectedCompanies.has(c.id));
+      saveToLocalStorage();
+      
+      exitBatchMode();
+      
+      renderCompanyList();
+      updateTotalCount();
+      updateStatusChart();
+      
+      Swal.fire({
+        title: '删除成功',
+        text: `已删除 ${count} 条记录`,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  });
+}
+
+// 清空所有记录
+function clearAllCompanies() {
+  Swal.fire({
+    title: '确认清空',
+    text: "确定要清空所有记录吗？此操作不可恢复！",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '确定清空',
+    cancelButtonText: '取消'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      companies = [];
+      saveToLocalStorage();
+      renderCompanyList();
+      updateTotalCount();
+      updateStatusChart();
+    }
+  });
+}
+
 // 导出数据到Excel
 function exportToExcel() {
   if (companies.length === 0) {
@@ -628,23 +650,20 @@ function exportToExcel() {
     return;
   }
 
-  // 准备导出数据
   const exportData = companies.map(company => ({
     '公司名称': company.name,
     '投递状态': statusTextMap[company.status],
-    '面试时间': company.interviewTime ? formatDateTime(company.interviewTime) : '',
+    '面试开始时间': company.interviewStartTime ? formatDateTime(company.interviewStartTime) : '',
+    '面试结束时间': company.interviewEndTime ? formatDateTime(company.interviewEndTime) : '',
     '面试网址': company.interviewLink || '',
     '总结': company.summary || '',
     '总结链接': company.summaryLink || '',
     '创建时间': formatDateTime(company.createdAt)
   }));
 
-  // 创建工作簿和工作表
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '秋招记录');
-
-  // 导出Excel文件
   XLSX.writeFile(wb, '秋招求职记录.xlsx');
 }
 
@@ -661,9 +680,7 @@ function handleExcelFileSelect(e) {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      // 转换导入的数据
       const importedCompanies = jsonData.map(item => {
-        // 查找状态对应的键
         let statusKey = 'applied';
         Object.entries(statusTextMap).forEach(([key, value]) => {
           if (value === item['投递状态']) {
@@ -675,7 +692,8 @@ function handleExcelFileSelect(e) {
           id: Date.now().toString() + Math.floor(Math.random() * 1000),
           name: item['公司名称'] || '',
           status: statusKey,
-          interviewTime: item['面试时间'] || '',
+          interviewStartTime: item['面试开始时间'] || '',
+          interviewEndTime: item['面试结束时间'] || '',
           interviewLink: item['面试网址'] || '',
           summary: item['总结'] || '',
           summaryLink: item['总结链接'] || '',
@@ -697,21 +715,4 @@ function handleExcelFileSelect(e) {
     }
   };
   reader.readAsArrayBuffer(file);
-
-  // 清空文件输入
-  e.target.value = '';
 }
-
-// 尝试从Excel导入数据（页面加载时）
-function importFromExcelOnLoad() {
-  // 如果有本地存储数据，优先使用
-  if (companies.length > 0) {
-    return;
-  }
-
-  // 这里可以添加从服务器加载数据的逻辑
-  // 目前主要使用localStorage
-}
-
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', initApp);

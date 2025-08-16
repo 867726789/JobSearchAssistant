@@ -1,63 +1,14 @@
-/* styles.css - 秋招求职助手样式文件 */
-
-/* Tailwind 自定义工具类 */
-@layer utilities {
-  .content-auto {
-    content-visibility: auto;
-  }
-  
-  .card-shadow {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    min-height: 200px;
-    min-width: 280px;
-  }
-  
-  .card-hover {
-    transition: all 0.3s ease;
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  .modal-transition {
-    transition: transform 0.2s ease-in-out;
-  }
+/* 自定义样式 */
+.card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* 状态颜色样式 */
-.bg-status-applied { background-color: #60A5FA; }
-.bg-status-interview1 { background-color: #34D399; }
-.bg-status-interview2 { background-color: #10B981; }
-.bg-status-interview3 { background-color: #059669; }
-.bg-status-interview4 { background-color: #047857; }
-.bg-status-hr { background-color: #F59E0B; }
-.bg-status-rejected { background-color: #EF4444; }
-
-.text-status-applied { color: #60A5FA; }
-.text-status-interview1 { color: #34D399; }
-.text-status-interview2 { color: #10B981; }
-.text-status-interview3 { color: #059669; }
-.text-status-interview4 { color: #047857; }
-.text-status-hr { color: #F59E0B; }
-.text-status-rejected { color: #EF4444; }
-
-/* 基础样式重置 */
-* { 
-  box-sizing: border-box; 
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-body {
-  font-family: 'Inter', 'system-ui', 'sans-serif';
-  background-color: #f9fafb;
-}
-
-.hidden {
-  display: none;
-}
-
-/* 文本截断和溢出处理 */
+/* 文本截断 */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -65,41 +16,44 @@ body {
   overflow: hidden;
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* 模态框动画 */
+.modal-transition {
+  transition: all 0.3s ease;
 }
 
-.break-words {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.break-all {
-  word-break: break-all;
-}
-
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* 响应式布局 */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 /* 批量删除模式样式 */
 .batch-mode-card {
-  transition: all 0.2s ease;
+  position: relative;
 }
 
-.batch-mode-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 15px rgba(239, 68, 68, 0.15);
+.batch-mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  transition: border-color 0.2s;
+  pointer-events: none;
 }
 
-.batch-mode-card.selected {
-  border: 2px solid #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+.batch-mode-card:hover::before {
+  border-color: #ef4444;
+}
+
+.batch-mode-card.selected::before {
+  border-color: #ef4444;
+  border-width: 3px;
 }
 
 /* 复选框样式优化 */
@@ -112,96 +66,15 @@ input[type="checkbox"]:checked {
   border-color: #ef4444;
 }
 
-/* 响应式字体大小 */
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  
-  .card-shadow {
-    padding: 1.25rem;
-    font-size: 0.875rem;
-  }
-  
-  .card-shadow h3 {
-    font-size: 1rem;
-    line-height: 1.25rem;
-  }
-  
-  .card-shadow .text-xs {
-    font-size: 0.75rem;
-  }
+/* 按钮禁用状态 */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
-@media (max-width: 390px) {
-  .card-shadow {
-    padding: 1rem;
-  }
-  
-  .card-shadow button {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-  }
-}
-
-/* 小屏幕优化 */
-@media (max-width: 480px) {
-  .card-shadow span.px-2 {
-    padding: 0.125rem 0.5rem;
-    font-size: 0.625rem;
-  }
-}
-
-/* 中等屏幕优化 */
-@media (min-width: 768px) and (max-width: 1280px) {
-  .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* 大屏幕优化 */
-@media (min-width: 1280px) {
-  .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1536px) {
-  .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-/* 按钮动画效果 */
-@keyframes pulse-red {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.batch-delete-active {
-  animation: pulse-red 2s infinite;
-}
-
-/* 确保卡片内容不会溢出 */
-.card-shadow > div {
-  min-width: 0;
-}
-
-/* 触摸设备优化 */
-@media (hover: none) and (pointer: coarse) {
-  .card-hover:hover {
-    transform: none;
-  }
-}
-
-/* 滚动条样式优化 */
+/* 滚动条样式 */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -210,40 +83,100 @@ input[type="checkbox"]:checked {
 
 ::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
 
-/* 模态框背景模糊效果 */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
+/* 网格布局优化 */
+#companyList {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-/* 加载状态 */
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
+@media (max-width: 768px) {
+  #companyList {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* 工具提示 */
-.tooltip {
-  position: relative;
+@media (min-width: 769px) and (max-width: 1280px) {
+  #companyList {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.tooltip:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+@media (min-width: 1281px) {
+  #companyList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1536px) {
+  #companyList {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 时间选择器样式优化 */
+input[type="datetime-local"] {
+  min-height: 42px;
+}
+
+/* 快速选择按钮样式 */
+button[data-duration] {
+  transition: all 0.2s ease;
+}
+
+button[data-duration]:hover {
+  transform: translateY(-1px);
+}
+
+/* 触摸优化 */
+@media (hover: none) {
+  .card-hover:hover {
+    transform: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* 状态标签样式优化 */
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
   white-space: nowrap;
-  z-index: 10;
+}
+
+/* 链接样式优化 */
+a {
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #2563eb;
+}
+
+/* 表单样式优化 */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 加载动画 */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
