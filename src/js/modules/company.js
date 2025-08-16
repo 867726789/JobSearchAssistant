@@ -8,11 +8,12 @@ export class CompanyManager {
       id: this.generateId(),
       name: data.name,
       status: data.status,
-      interviewStartTime: data.interviewStartTime,
-      interviewEndTime: data.interviewEndTime,
-      interviewLink: data.interviewLink,
-      summary: data.summary,
+      interviewStartTime: data.interviewStartTime || null,
+      interviewEndTime: data.interviewEndTime || null,
+      interviewLink: data.interviewLink || null,
+      summary: data.summary || null,
       summaryLinks: data.summaryLinks || [],
+      summaryLink: data.summaryLink || null, // 向后兼容
       createdAt: new Date().toISOString()
     };
   }
@@ -21,6 +22,7 @@ export class CompanyManager {
     const index = companies.findIndex(c => c.id === updatedCompany.id);
     if (index !== -1) {
       companies[index] = {
+        ...companies[index],
         ...updatedCompany,
         createdAt: companies[index].createdAt
       };

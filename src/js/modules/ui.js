@@ -140,7 +140,7 @@ export class UIManager {
     if (!company.interviewLink) return '';
     return `
       <div class="mb-2">
-        <a href="${company.interviewLink}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+        <a href="${company.interviewLink}" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center">
           <i class="fa fa-link mr-2 text-gray-400"></i>
           <span class="truncate">面试链接</span>
         </a>
@@ -166,7 +166,7 @@ export class UIManager {
           <p class="text-sm font-medium text-gray-700 mb-1">相关链接：</p>
           <div class="space-y-1">
             ${company.summaryLinks.map(link => `
-              <a href="${link.url}" target="_blank" class="text-sm text-primary hover:underline flex items-center">
+              <a href="${link.url}" target="_blank" class="text-sm text-primary hover:underline inline-flex items-center">
                 <i class="fa fa-link mr-2 text-gray-400"></i>
                 <span class="truncate">${link.name}</span>
               </a>

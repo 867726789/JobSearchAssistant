@@ -171,6 +171,18 @@ class JobSearchApp {
   }
 
   sortCompanies(order) {
+    // 更新排序按钮的视觉状态
+    document.querySelectorAll('[id^="sortByDate"]').forEach(btn => {
+      btn.classList.remove('ring-2', 'ring-primary/50');
+    });
+    
+    // 为当前选中的排序按钮添加高亮
+    const activeBtn = document.getElementById(`sortByDate${order === 'asc' ? 'Asc' : 'Desc'}`);
+    if (activeBtn) {
+      activeBtn.classList.add('ring-2', 'ring-primary/50');
+    }
+    
+    // 执行排序
     const sorted = this.companyManager.sortCompanies(this.companies, order);
     this.ui.renderCompanyList(sorted, this.batch.isBatchMode, this.batch.selectedCompanies);
   }
