@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简历编辑 - 求职助手</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <link rel="stylesheet" href="src/css/resume.css">
+    <style>
+        /* 简历编辑页面专用样式 */
+        .edit-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 100vh;
+        }
+
+        .edit-form-section {
+            background: #f9fafb;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .edit-preview-section {
+            background: white;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .template-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-option:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .template-option.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .template-preview-small {
+            width: 60px;
+            height: 80px;
+            margin: 0 auto 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .preview-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .preview-contact {
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .preview-section {
+            margin-bottom: 24px;
+        }
+
+        .preview-section h4 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .preview-content {
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        @media (max-width: 1024px) {
+            .edit-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .edit-form-section {
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            .template-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .edit-form-section,
+            .edit-preview-section {
+                padding: 16px;
+            }
+            
+            .template-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 编辑页面头部 -->
+    <div class="btn-group">
+        <button class="btn btn-secondary" onclick="goBack()">
+            <i class="fas fa-arrow-left mr-2"></i>返回列表
+        </button>
+        <button class="btn btn-primary" onclick="saveResume()">
+            <i class="fas fa-save mr-2"></i>保存简历
+        </button>
+        <button class="btn btn-danger" onclick="deleteResume()" id="deleteBtn" style="display: none;">
+            <i class="fas fa-trash mr-2"></i>删除
+        </button>
+    </div>
+
+    <div class="edit-container">
+        <!-- 左侧编辑表单 -->
+        <div class="edit-form-section">
+            <form id="detailed-resume-form">
+                <!-- 基本信息 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-user-circle"></i>基本信息</h3>
+                    <div class="form-grid form-grid-2">
+                        <div class="form-field">
+                            <label>姓名 *</label>
+                            <input type="text" id="detail-name" name="name" placeholder="请输入您的姓名" required>
+                        </div>
+                        <div class="form-field">
+                            <label>求职意向 *</label>
+                            <input type="text" id="detail-position" name="position" placeholder="如：前端开发工程师" required>
+                        </div>
+                    </div>
+                    <div class="form-grid form-grid-3">
+                        <div class="form-field">
+                            <label>电话 *</label>
+                            <input type="tel" id="detail-phone" name="phone" placeholder="138****8888" required>
+                        </div>
+                        <div class="form-field">
+                            <label>邮箱 *</label>
+                            <input type="email" id="detail-email" name="email" placeholder="example@email.com" required>
+                        </div>
+                        <div class="form-field">
+                            <label>工作年限</label>
+                            <select id="detail-experience" name="experience">
+                                <option value="">请选择</option>
+                                <option value="应届生">应届生</option>
+                                <option value="1-3年">1-3年</option>
+                                <option value="3-5年">3-5年</option>
+                                <option value="5-10年">5-10年</option>
+                                <option value="10年以上">10年以上</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label>个人简介 *</label>
+                        <textarea id="detail-summary" name="summary" rows="4" 
+                                  placeholder="用简短的话介绍自己，突出核心优势和职业目标..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- 模板选择 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-palette"></i>选择模板</h3>
+                    <div class="template-selector">
+                        <div class="template-option" data-template="classic">
+                            <div class="template-preview-small" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">经典模板</div>
+                                <div style="font-size: 12px; color: #6b7280;">专业简洁</div>
+                            </div>
+                        </div>
+                        <div class="template-option" data-template="modern">
+                            <div class="template-preview-small" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">现代模板</div>
+                                <div style="font-size: 12px; color: #6b7280;">时尚设计</div>
+                            </div>
+                        </div>
+                        <div class="template-option" data-template="minimal">
+                            <div class="template-preview-small" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%);">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">简约模板</div>
+                                <div style="font-size: 12px; color: #6b7280;">极简风格</div>
+                            </div>
+                        </div>
+                        <div class="template-option" data-template="creative">
+                            <div class="template-preview-small" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">创意模板</div>
+                                <div style="font-size: 12px; color: #6b7280;">个性设计</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 工作经历 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-briefcase"></i>工作经历</h3>
+                    <div id="work-experience-container">
+                        <div class="work-item mb-4 p-4 border rounded-lg">
+                            <div class="form-grid form-grid-2">
+                                <div class="form-field">
+                                    <label>公司名称</label>
+                                    <input type="text" class="work-company" placeholder="公司名称">
+                                </div>
+                                <div class="form-field">
+                                    <label>职位</label>
+                                    <input type="text" class="work-position" placeholder="职位">
+                                </div>
+                            </div>
+                            <div class="form-grid form-grid-2">
+                                <div class="form-field">
+                                    <label>开始时间</label>
+                                    <input type="month" class="work-start">
+                                </div>
+                                <div class="form-field">
+                                    <label>结束时间</label>
+                                    <input type="month" class="work-end">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>工作内容</label>
+                                <textarea class="work-description" rows="3" 
+                                          placeholder="描述你的主要工作内容和成就..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addWorkExperience()" class="btn btn-secondary">
+                        <i class="fas fa-plus mr-2"></i>添加工作经历
+                    </button>
+                </div>
+
+                <!-- 教育背景 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-graduation-cap"></i>教育背景</h3>
+                    <div id="education-container">
+                        <div class="education-item mb-4 p-4 border rounded-lg">
+                            <div class="form-grid form-grid-2">
+                                <div class="form-field">
+                                    <label>学校名称</label>
+                                    <input type="text" class="education-school" placeholder="学校名称">
+                                </div>
+                                <div class="form-field">
+                                    <label>专业</label>
+                                    <input type="text" class="education-major" placeholder="专业">
+                                </div>
+                            </div>
+                            <div class="form-grid form-grid-2">
+                                <div class="form-field">
+                                    <label>学历</label>
+                                    <select class="education-degree">
+                                        <option value="">请选择</option>
+                                        <option value="高中">高中</option>
+                                        <option value="专科">专科</option>
+                                        <option value="本科">本科</option>
+                                        <option value="硕士">硕士</option>
+                                        <option value="博士">博士</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label>时间</label>
+                                    <input type="text" class="education-time" placeholder="2017-2021">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addEducation()" class="btn btn-secondary">
+                        <i class="fas fa-plus mr-2"></i>添加教育背景
+                    </button>
+                </div>
+
+                <!-- 技能 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-tools"></i>技能</h3>
+                    <div class="form-field">
+                        <label>专业技能</label>
+                        <textarea id="detail-skills" rows="4" 
+                                  placeholder="列出你的专业技能，用逗号分隔..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 项目经验 -->
+                <div class="form-section">
+                    <h3><i class="fas fa-project-diagram"></i>项目经验</h3>
+                    <div id="projects-container">
+                        <div class="project-item mb-4 p-4 border rounded-lg">
+                            <div class="form-field">
+                                <label>项目名称</label>
+                                <input type="text" class="project-name" placeholder="项目名称">
+                            </div>
+                            <div class="form-grid form-grid-2">
+                                <div class="form-field">
+                                    <label>时间</label>
+                                    <input type="text" class="project-time" placeholder="2023.03-2023.06">
+                                </div>
+                                <div class="form-field">
+                                    <label>角色</label>
+                                    <input type="text" class="project-role" placeholder="前端开发">
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>项目描述</label>
+                                <textarea class="project-description" rows="3" 
+                                          placeholder="描述项目背景、你的职责和成果..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addProject()" class="btn btn-secondary">
+                        <i class="fas fa-plus mr-2"></i>添加项目经验
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 右侧预览 -->
+        <div class="edit-preview-section">
+            <div class="preview-container">
+                <div class="preview-header">
+                    <div class="preview-name" id="preview-name">姓名</div>
+                    <div class="preview-contact" id="preview-contact">
+                        <span id="preview-phone">电话</span> | 
+                        <span id="preview-email">邮箱</span> | 
+                        <span id="preview-experience">工作年限</span>
+                    </div>
+                    <div id="preview-position">求职意向</div>
+                </div>
+
+                <div class="preview-section">
+                    <h4>个人简介</h4>
+                    <div class="preview-content" id="preview-summary">个人简介内容</div>
+                </div>
+
+                <div class="preview-section">
+                    <h4>工作经历</h4>
+                    <div id="preview-work-experience">工作经历内容</div>
+                </div>
+
+                <div class="preview-section">
+                    <h4>教育背景</h4>
+                    <div id="preview-education">教育背景内容</div>
+                </div>
+
+                <div class="preview-section">
+                    <h4>项目经验</h4>
+                    <div id="preview-projects">项目经验内容</div>
+                </div>
+
+                <div class="preview-section">
+                    <h4>专业技能</h4>
+                    <div class="preview-content" id="preview-skills">技能内容</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/resume-edit.js"></script>
+</body>
+</html>
