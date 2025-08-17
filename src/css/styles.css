@@ -21,3 +21,6 @@
 
 /* 日程安排页面样式 */
 @import url('schedule.css');
+
+/* 简历管理页面样式 */
+@import url('resume.css');

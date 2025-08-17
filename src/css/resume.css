@@ -1,0 +1,167 @@
+/* 简历管理页面专用样式 */
+
+/* 简历卡片样式 */
+.resume-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.resume-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+/* 模板网格布局 */
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.template-item {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.template-item:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+}
+
+.template-preview {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* 模板颜色主题 */
+.template-classic .template-preview {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.template-modern .template-preview {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.template-minimal .template-preview {
+    background: linear-gradient(135deg, #6b7280 0%, #374151 100%);
+}
+
+.template-creative .template-preview {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* 统计卡片 */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #3b82f6;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* 简历列表 */
+.resume-list {
+    display: grid;
+    gap: 16px;
+}
+
+.resume-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.resume-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.resume-info h4 {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.resume-info p {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.resume-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    padding: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #6b7280;
+    transition: color 0.2s;
+}
+
+.btn-icon:hover {
+    color: #3b82f6;
+}
+
+.btn-icon.text-red-600:hover {
+    color: #ef4444;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .resume-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .resume-actions {
+        align-self: flex-end;
+    }
+}
