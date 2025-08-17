@@ -8,7 +8,145 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="src/css/styles.css">
     <style>
-        /* 侧边栏样式 - 同上 */
+        /* 简历页面专用样式 */
+        .resume-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .resume-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .template-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .template-item:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+        }
+
+        .template-preview {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .template-classic .template-preview {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .template-modern .template-preview {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .template-minimal .template-preview {
+            background: linear-gradient(135deg, #6b7280 0%, #374151 100%);
+        }
+
+        .template-creative .template-preview {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .resume-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .resume-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .resume-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .resume-info h4 {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .resume-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .resume-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+
+        .btn-icon:hover {
+            color: #3b82f6;
+        }
+
+        /* 侧边栏样式 - 与schedule页面一致 */
         .sidebar {
             position: fixed;
             left: 0;
@@ -92,7 +230,7 @@
         .sidebar-toggle {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 20px;
             background: none;
             border: none;
             font-size: 20px;
@@ -184,17 +322,6 @@
             }
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3B82F6'
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- 侧边栏 -->
@@ -248,98 +375,402 @@
         <!-- 顶部导航栏 -->
         <header class="bg-white shadow-md sticky top-0 z-40 ml-16">
             <div class="container mx-auto px-4 py-4">
-                <h1 class="text-2xl font-bold text-gray-800">简历管理</h1>
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-gray-800">简历管理</h1>
+                    <div class="flex gap-4">
+                        <input type="text" id="search-resumes" placeholder="搜索简历..." 
+                               class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="createNewResume()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            <i class="fas fa-plus mr-2"></i>创建简历
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
         <main class="container mx-auto px-4 py-8">
-            <div class="bg-white rounded-xl shadow-lg p-8">
-                <div class="text-center py-16">
-                    <i class="fas fa-file-alt text-6xl text-primary mb-4 opacity-50"></i>
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">简历管理功能</h2>
-                    <p class="text-xl text-gray-600 mb-8">正在开发中，即将上线</p>
-                    
-                    <div class="max-w-3xl mx-auto">
-                        <div class="grid md:grid-cols-2 gap-6 text-left">
-                            <div class="bg-blue-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-blue-800 mb-2">简历模板库</h3>
-                                <p class="text-blue-600 text-sm">多种专业模板，一键生成精美简历</p>
-                            </div>
-                            <div class="bg-green-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-green-800 mb-2">智能优化</h3>
-                                <p class="text-green-600 text-sm">AI分析岗位要求，智能优化简历内容</p>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-purple-800 mb-2">版本管理</h3>
-                                <p class="text-purple-600 text-sm">不同岗位定制不同版本，轻松切换</p>
-                            </div>
-                            <div class="bg-orange-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-orange-800 mb-2">一键投递</h3>
-                                <p class="text-orange-600 text-sm">简历与投递记录联动，快速投递</p>
-                            </div>
-                            <div class="bg-red-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-red-800 mb-2">投递分析</h3>
-                                <p class="text-red-600 text-sm">分析简历效果，优化求职策略</p>
-                            </div>
-                            <div class="bg-indigo-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-indigo-800 mb-2">PDF导出</h3>
-                                <p class="text-indigo-600 text-sm">高质量PDF导出，适配各种投递渠道</p>
-                            </div>
+            <!-- 统计信息 -->
+            <div class="stats-grid mb-8">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-resumes">0</div>
+                    <div class="stat-label">总简历数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="recent-resumes">0</div>
+                    <div class="stat-label">本周修改</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">可用模板</div>
+                </div>
+            </div>
+
+            <!-- 简历列表 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold mb-4">我的简历</h2>
+                <div id="resume-list">
+                    <!-- 简历列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 模板选择 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-8">
+                <h2 class="text-xl font-bold mb-4">选择模板</h2>
+                <div class="template-grid">
+                    <div class="template-item template-classic" onclick="selectTemplate('classic')">
+                        <div class="template-preview">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold">经典模板</h3>
+                            <p class="text-sm text-gray-600">传统布局，专业简洁</p>
                         </div>
                     </div>
-                    
-                    <a href="dashboard.html" class="inline-block mt-8 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all">
-                        <i class="fas fa-arrow-left mr-2"></i>返回数据看板
-                    </a>
+                    <div class="template-item template-modern" onclick="selectTemplate('modern')">
+                        <div class="template-preview">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold">现代模板</h3>
+                            <p class="text-sm text-gray-600">时尚设计，突出亮点</p>
+                        </div>
+                    </div>
+                    <div class="template-item template-minimal" onclick="selectTemplate('minimal')">
+                        <div class="template-preview">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold">简约模板</h3>
+                            <p class="text-sm text-gray-600">极简风格，重点突出</p>
+                        </div>
+                    </div>
+                    <div class="template-item template-creative" onclick="selectTemplate('creative')">
+                        <div class="template-preview">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-semibold">创意模板</h3>
+                            <p class="text-sm text-gray-600">个性设计，与众不同</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // 侧边栏功能 - 同上
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        let sidebarTimeout;
+        // 简历数据存储
+        let resumes = [];
+        let currentResume = null;
 
-        sidebar.addEventListener('mouseenter', () => {
-            clearTimeout(sidebarTimeout);
-            sidebar.classList.remove('sidebar-collapsed');
-            sidebar.classList.add('sidebar-expanded');
-            mainContent.classList.add('sidebar-open');
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResumes();
+            renderResumeList();
+            updateStats();
+            initializeSidebar();
         });
 
-        sidebar.addEventListener('mouseleave', () => {
-            sidebarTimeout = setTimeout(() => {
-                sidebar.classList.remove('sidebar-expanded');
-                sidebar.classList.add('sidebar-collapsed');
-                mainContent.classList.remove('sidebar-open');
-            }, 300);
-        });
+        // 侧边栏功能
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            let sidebarTimeout;
 
-        function toggleMobileSidebar() {
-            sidebar.classList.toggle('mobile-open');
-        }
+            sidebar.addEventListener('mouseenter', () => {
+                clearTimeout(sidebarTimeout);
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+                mainContent.classList.add('sidebar-open');
+            });
 
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                
-                if (window.innerWidth <= 768) {
+            sidebar.addEventListener('mouseleave', () => {
+                sidebarTimeout = setTimeout(() => {
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                    mainContent.classList.remove('sidebar-open');
+                }, 300);
+            });
+
+            // 移动端菜单
+            window.toggleMobileSidebar = function() {
+                sidebar.classList.toggle('mobile-open');
+            };
+
+            // 菜单项点击
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+
+            // 响应式处理
+            function handleResize() {
+                if (window.innerWidth > 768) {
                     sidebar.classList.remove('mobile-open');
                 }
-            });
-        });
+            }
 
-        function handleResize() {
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('mobile-open');
+            window.addEventListener('resize', handleResize);
+            handleResize();
+        }
+
+        // 加载简历数据
+        function loadResumes() {
+            const saved = localStorage.getItem('resumes');
+            if (saved) {
+                resumes = JSON.parse(saved);
+            } else {
+                // 示例数据
+                resumes = [
+                    {
+                        id: 1,
+                        name: '前端开发工程师',
+                        template: 'modern',
+                        lastModified: new Date('2024-01-15'),
+                        content: {
+                            name: '张三',
+                            phone: '138****8888',
+                            email: 'zhangsan@example.com',
+                            summary: '3年前端开发经验，精通React、Vue等框架'
+                        }
+                    },
+                    {
+                        id: 2,
+                        name: '产品经理',
+                        template: 'classic',
+                        lastModified: new Date('2024-01-10'),
+                        content: {
+                            name: '李四',
+                            phone: '139****9999',
+                            email: 'lisi@example.com',
+                            summary: '5年产品经验，主导多个千万级用户产品'
+                        }
+                    }
+                ];
+                saveResumes();
             }
         }
 
-        window.addEventListener('resize', handleResize);
-        handleResize();
+        // 保存简历数据
+        function saveResumes() {
+            localStorage.setItem('resumes', JSON.stringify(resumes));
+        }
+
+        // 渲染简历列表
+        function renderResumeList() {
+            const listContainer = document.getElementById('resume-list');
+            if (!listContainer) return;
+
+            if (resumes.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-file-alt text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 mb-4">还没有简历，开始创建吧！</p>
+                        <button onclick="createNewResume()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            创建新简历
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = resumes.map(resume => `
+                <div class="resume-item">
+                    <div class="resume-info">
+                        <h4>${resume.name}</h4>
+                        <p>模板：${getTemplateName(resume.template)} • 最后修改：${formatDate(resume.lastModified)}</p>
+                    </div>
+                    <div class="resume-actions">
+                        <button class="btn-icon" onclick="editResume(${resume.id})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" onclick="previewResume(${resume.id})" title="预览">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon" onclick="duplicateResume(${resume.id})" title="复制">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn-icon text-red-600" onclick="deleteResume(${resume.id})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 获取模板名称
+        function getTemplateName(template) {
+            const names = {
+                classic: '经典模板',
+                modern: '现代模板',
+                minimal: '简约模板',
+                creative: '创意模板'
+            };
+            return names[template] || '未知模板';
+        }
+
+        // 格式化日期
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('zh-CN');
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const totalEl = document.getElementById('total-resumes');
+            const recentEl = document.getElementById('recent-resumes');
+            
+            if (totalEl) totalEl.textContent = resumes.length;
+            
+            const recentCount = resumes.filter(r => {
+                const daysDiff = (new Date() - new Date(r.lastModified)) / (1000 * 60 * 60 * 24);
+                return daysDiff <= 7;
+            }).length;
+            
+            if (recentEl) recentEl.textContent = recentCount;
+        }
+
+        // 创建新简历
+        function createNewResume() {
+            const name = prompt('请输入简历名称：');
+            if (name) {
+                const newResume = {
+                    id: Date.now(),
+                    name: name,
+                    template: 'modern',
+                    lastModified: new Date(),
+                    content: {
+                        name: '',
+                        phone: '',
+                        email: '',
+                        summary: ''
+                    }
+                };
+                
+                resumes.unshift(newResume);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        // 选择模板
+        function selectTemplate(template) {
+            const name = prompt('请输入简历名称：');
+            if (name) {
+                const newResume = {
+                    id: Date.now(),
+                    name: name,
+                    template: template,
+                    lastModified: new Date(),
+                    content: {
+                        name: '',
+                        phone: '',
+                        email: '',
+                        summary: ''
+                    }
+                };
+                
+                resumes.unshift(newResume);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        // 编辑简历
+        function editResume(id) {
+            const resume = resumes.find(r => r.id === id);
+            if (resume) {
+                const newName = prompt('请输入新的简历名称：', resume.name);
+                if (newName) {
+                    resume.name = newName;
+                    resume.lastModified = new Date();
+                    saveResumes();
+                    renderResumeList();
+                    updateStats();
+                }
+            }
+        }
+
+        // 预览简历
+        function previewResume(id) {
+            const resume = resumes.find(r => r.id === id);
+            if (resume) {
+                alert(`简历预览：\n\n名称：${resume.name}\n模板：${getTemplateName(resume.template)}\n姓名：${resume.content.name || '未填写'}\n电话：${resume.content.phone || '未填写'}\n邮箱：${resume.content.email || '未填写'}\n简介：${resume.content.summary || '未填写'}`);
+            }
+        }
+
+        // 复制简历
+        function duplicateResume(id) {
+            const resume = resumes.find(r => r.id === id);
+            if (resume) {
+                const newResume = {
+                    ...resume,
+                    id: Date.now(),
+                    name: `${resume.name} - 副本`,
+                    lastModified: new Date()
+                };
+                resumes.unshift(newResume);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        // 删除简历
+        function deleteResume(id) {
+            if (confirm('确定要删除这个简历吗？此操作不可恢复。')) {
+                resumes = resumes.filter(r => r.id !== id);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        // 搜索功能
+        document.getElementById('search-resumes').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const filtered = resumes.filter(r => 
+                r.name.toLowerCase().includes(query) || 
+                getTemplateName(r.template).toLowerCase().includes(query)
+            );
+            
+            const listContainer = document.getElementById('resume-list');
+            if (listContainer) {
+                if (filtered.length === 0) {
+                    listContainer.innerHTML = '<div class="text-center py-8 text-gray-500">没有找到匹配的简历</div>';
+                } else {
+                    listContainer.innerHTML = filtered.map(resume => `
+                        <div class="resume-item">
+                            <div class="resume-info">
+                                <h4>${resume.name}</h4>
+                                <p>模板：${getTemplateName(resume.template)} • 最后修改：${formatDate(resume.lastModified)}</p>
+                            </div>
+                            <div class="resume-actions">
+                                <button class="btn-icon" onclick="editResume(${resume.id})" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" onclick="previewResume(${resume.id})" title="预览">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon" onclick="duplicateResume(${resume.id})" title="复制">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn-icon text-red-600" onclick="deleteResume(${resume.id})" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        });
     </script>
 </body>
 </html>
