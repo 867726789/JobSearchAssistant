@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日程安排 - 求职助手</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="src/css/styles.css">
     <style>
-        /* 侧边栏样式 - 复制自dashboard.html */
+        /* 侧边栏样式 */
         .sidebar {
             position: fixed;
             left: 0;
@@ -165,6 +166,135 @@
             color: #6B7280;
         }
         
+        /* 日历样式 */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .calendar-header {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .calendar-day {
+            background: white;
+            padding: 8px;
+            min-height: 80px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .calendar-day:hover {
+            background: #f3f4f6;
+        }
+        
+        .calendar-day.selected {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+        }
+        
+        .calendar-day.has-events::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+        
+        .calendar-day.other-month {
+            color: #9ca3af;
+            background: #f9fafb;
+        }
+        
+        .calendar-day-number {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        /* 时间轴样式 */
+        .timeline {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+            border-left: 2px solid #e5e7eb;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 8px;
+            width: 10px;
+            height: 10px;
+            background: #3b82f6;
+            border-radius: 50%;
+        }
+        
+        .timeline-item.conflict {
+            border-left-color: #ef4444;
+        }
+        
+        .timeline-item.conflict::before {
+            background: #ef4444;
+        }
+        
+        .timeline-time {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .timeline-content {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-content.interview {
+            border-left: 4px solid #10b981;
+        }
+        
+        .timeline-content.meeting {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .timeline-content.deadline {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .timeline-content.other {
+            border-left: 4px solid #6b7280;
+        }
+        
+        /* 冲突警告样式 */
+        .conflict-warning {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 768px) {
             .sidebar {
@@ -181,6 +311,12 @@
             
             .sidebar-toggle {
                 display: block;
+            }
+            
+            .calendar-day {
+                min-height: 60px;
+                padding: 4px;
+                font-size: 14px;
             }
         }
     </style>
@@ -253,43 +389,116 @@
         </header>
 
         <main class="container mx-auto px-4 py-8">
-            <div class="bg-white rounded-xl shadow-lg p-8">
-                <div class="text-center py-16">
-                    <i class="fas fa-calendar-alt text-6xl text-primary mb-4 opacity-50"></i>
-                    <h2 class="text-3xl font-bold text-gray-800 mb-4">日程安排功能</h2>
-                    <p class="text-xl text-gray-600 mb-8">即将推出，敬请期待</p>
-                    
-                    <div class="max-w-2xl mx-auto">
-                        <div class="grid md:grid-cols-2 gap-6 text-left">
-                            <div class="bg-blue-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-blue-800 mb-2">面试日历</h3>
-                                <p class="text-blue-600 text-sm">可视化展示所有面试安排，一目了然</p>
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- 日历部分 -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">日历</h2>
+                            <div class="flex gap-2">
+                                <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
                             </div>
-                            <div class="bg-green-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-green-800 mb-2">提醒通知</h3>
-                                <p class="text-green-600 text-sm">面试前自动提醒，不再错过重要机会</p>
-                            </div>
-                            <div class="bg-purple-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-purple-800 mb-2">时间冲突检测</h3>
-                                <p class="text-purple-600 text-sm">智能识别时间冲突，避免安排重叠</p>
-                            </div>
-                            <div class="bg-orange-50 p-6 rounded-lg">
-                                <h3 class="font-semibold text-orange-800 mb-2">一键同步</h3>
-                                <p class="text-orange-600 text-sm">与手机日历同步，随时随地查看</p>
+                        </div>
+                        <div class="text-center mb-4">
+                            <h3 id="calendarTitle" class="text-lg font-semibold text-gray-700"></h3>
+                        </div>
+                        <div id="calendar" class="calendar"></div>
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="goToToday()" class="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90 transition">
+                                今天
+                            </button>
+                            <button onclick="showAddEventModal()" class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition">
+                                添加日程
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间轴部分 -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">
+                                今日日程 <span id="selectedDate" class="text-primary"></span>
+                            </h2>
+                            <button onclick="syncInterviews()" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+                                <i class="fas fa-sync mr-2"></i>同步面试
+                            </button>
+                        </div>
+                        
+                        <div id="conflictWarning" class="conflict-warning">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <span id="conflictText"></span>
+                        </div>
+                        
+                        <div id="timeline" class="timeline">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-calendar-day text-4xl mb-4 opacity-50"></i>
+                                <p>今天没有安排</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <a href="dashboard.html" class="inline-block mt-8 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all">
-                        <i class="fas fa-arrow-left mr-2"></i>返回数据看板
-                    </a>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- 添加日程模态框 -->
+    <div id="addEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-4">添加新日程</h3>
+            <form id="eventForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">标题</label>
+                    <input type="text" id="eventTitle" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">类型</label>
+                    <select id="eventType" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="interview">面试</option>
+                        <option value="meeting">会议</option>
+                        <option value="deadline">截止</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">开始时间</label>
+                        <input type="datetime-local" id="eventStart" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">结束时间</label>
+                        <input type="datetime-local" id="eventEnd" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary" required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">描述</label>
+                    <textarea id="eventDescription" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary" rows="3"></textarea>
+                </div>
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition">
+                        保存
+                    </button>
+                    <button type="button" onclick="closeAddEventModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition">
+                        取消
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // 侧边栏功能 - 复制自dashboard.html
+        // 全局变量
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let events = [];
+
+        // 侧边栏功能
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('mainContent');
         let sidebarTimeout;
@@ -332,6 +541,280 @@
 
         window.addEventListener('resize', handleResize);
         handleResize();
+
+        // 日历功能
+        function generateCalendar(year, month) {
+            const calendar = document.getElementById('calendar');
+            const title = document.getElementById('calendarTitle');
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            title.textContent = `${year}年${month + 1}月`;
+            
+            calendar.innerHTML = '';
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                calendar.appendChild(header);
+            });
+            
+            // 生成日期
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                
+                if (date.getMonth() !== month) {
+                    dayDiv.classList.add('other-month');
+                }
+                
+                if (date.toDateString() === selectedDate.toDateString()) {
+                    dayDiv.classList.add('selected');
+                }
+                
+                // 检查是否有事件
+                const hasEvents = events.some(event => {
+                    const eventDate = new Date(event.start);
+                    return eventDate.toDateString() === date.toDateString();
+                });
+                
+                if (hasEvents) {
+                    dayDiv.classList.add('has-events');
+                }
+                
+                dayDiv.innerHTML = `
+                    <div class="calendar-day-number">${date.getDate()}</div>
+                `;
+                
+                dayDiv.addEventListener('click', () => selectDate(date));
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function selectDate(date) {
+            selectedDate = new Date(date);
+            currentDate = new Date(date);
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            updateTimeline();
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+        }
+
+        function goToToday() {
+            selectedDate = new Date();
+            currentDate = new Date();
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            updateTimeline();
+        }
+
+        // 时间轴功能
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            const selectedDateText = document.getElementById('selectedDate');
+            const conflictWarning = document.getElementById('conflictWarning');
+            const conflictText = document.getElementById('conflictText');
+            
+            selectedDateText.textContent = selectedDate.toLocaleDateString('zh-CN');
+            
+            const dayEvents = events.filter(event => {
+                const eventDate = new Date(event.start);
+                return eventDate.toDateString() === selectedDate.toDateString();
+            }).sort((a, b) => new Date(a.start) - new Date(b.start));
+            
+            if (dayEvents.length === 0) {
+                timeline.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-calendar-day text-4xl mb-4 opacity-50"></i>
+                        <p>今天没有安排</p>
+                    </div>
+                `;
+                conflictWarning.style.display = 'none';
+                return;
+            }
+            
+            // 检测冲突
+            const conflicts = [];
+            for (let i = 0; i < dayEvents.length - 1; i++) {
+                const current = dayEvents[i];
+                const next = dayEvents[i + 1];
+                
+                if (new Date(current.end) > new Date(next.start)) {
+                    conflicts.push(`${current.title} 和 ${next.title}`);
+                }
+            }
+            
+            if (conflicts.length > 0) {
+                conflictText.textContent = `时间冲突：${conflicts.join('、')}`;
+                conflictWarning.style.display = 'block';
+            } else {
+                conflictWarning.style.display = 'none';
+            }
+            
+            timeline.innerHTML = dayEvents.map(event => {
+                const startTime = new Date(event.start).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                const endTime = new Date(event.end).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                const hasConflict = conflicts.some(c => c.includes(event.title));
+                
+                return `
+                    <div class="timeline-item ${hasConflict ? 'conflict' : ''}">
+                        <div class="timeline-time">${startTime} - ${endTime}</div>
+                        <div class="timeline-content ${event.type}">
+                            <div class="font-semibold">${event.title}</div>
+                            ${event.description ? `<div class="text-sm text-gray-600 mt-1">${event.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 同步面试功能
+        async function syncInterviews() {
+            try {
+                const companies = JSON.parse(localStorage.getItem('autumnRecruitmentCompanies') || '[]');
+                const interviews = companies.filter(c => c.interviewStartTime && c.interviewEndTime);
+                
+                interviews.forEach(company => {
+                    const existingEvent = events.find(e => 
+                        e.companyId === company.id && 
+                        new Date(e.start).toDateString() === new Date(company.interviewStartTime).toDateString()
+                    );
+                    
+                    if (!existingEvent) {
+                        events.push({
+                            id: Date.now() + Math.random(),
+                            companyId: company.id,
+                            title: `${company.name} 面试`,
+                            type: 'interview',
+                            start: company.interviewStartTime,
+                            end: company.interviewEndTime,
+                            description: `${company.position || '岗位'} - ${company.location || '地点未指定'}`
+                        });
+                    }
+                });
+                
+                saveEvents();
+                generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+                updateTimeline();
+                
+                Swal.fire({
+                    title: '同步成功',
+                    text: `已同步 ${interviews.length} 个面试安排`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                Swal.fire({
+                    title: '同步失败',
+                    text: '无法读取面试数据',
+                    icon: 'error',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        // 事件管理
+        function showAddEventModal() {
+            document.getElementById('addEventModal').classList.remove('hidden');
+            const startInput = document.getElementById('eventStart');
+            const endInput = document.getElementById('eventEnd');
+            
+            const startDate = new Date(selectedDate);
+            startDate.setHours(9, 0, 0, 0);
+            const endDate = new Date(startDate);
+            endDate.setHours(10, 0, 0, 0);
+            
+            startInput.value = startDate.toISOString().slice(0, 16);
+            endInput.value = endDate.toISOString().slice(0, 16);
+        }
+
+        function closeAddEventModal() {
+            document.getElementById('addEventModal').classList.add('hidden');
+            document.getElementById('eventForm').reset();
+        }
+
+        function saveEvents() {
+            localStorage.setItem('scheduleEvents', JSON.stringify(events));
+        }
+
+        function loadEvents() {
+            const saved = localStorage.getItem('scheduleEvents');
+            events = saved ? JSON.parse(saved) : [];
+        }
+
+        // 表单提交
+        document.getElementById('eventForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('eventTitle').value;
+            const type = document.getElementById('eventType').value;
+            const start = document.getElementById('eventStart').value;
+            const end = document.getElementById('eventEnd').value;
+            const description = document.getElementById('eventDescription').value;
+            
+            if (new Date(start) >= new Date(end)) {
+                Swal.fire({
+                    title: '错误',
+                    text: '结束时间必须晚于开始时间',
+                    icon: 'error',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                return;
+            }
+            
+            events.push({
+                id: Date.now(),
+                title,
+                type,
+                start,
+                end,
+                description
+            });
+            
+            saveEvents();
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            updateTimeline();
+            closeAddEventModal();
+            
+            Swal.fire({
+                title: '添加成功',
+                text: '日程已添加',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        });
+
+        // 点击模态框外部关闭
+        document.getElementById('addEventModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('addEventModal')) {
+                closeAddEventModal();
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEvents();
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            updateTimeline();
+            
+            // 自动同步面试
+            syncInterviews();
+        });
     </script>
 </body>
 </html>
