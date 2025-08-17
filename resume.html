@@ -144,6 +144,78 @@
         </main>
     </div>
 
+    <!-- 简历编辑模态框 -->
+    <div id="resume-edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">编辑简历</h3>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="resume-edit-form">
+                    <div class="form-group">
+                        <label for="resume-name">简历名称</label>
+                        <input type="text" id="resume-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resume-template">选择模板</label>
+                        <select id="resume-template" name="template" required>
+                            <option value="classic">经典模板</option>
+                            <option value="modern">现代模板</option>
+                            <option value="minimal">简约模板</option>
+                            <option value="creative">创意模板</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="person-name">姓名</label>
+                        <input type="text" id="person-name" name="personName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="person-phone">电话</label>
+                        <input type="tel" id="person-phone" name="phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="person-email">邮箱</label>
+                        <input type="email" id="person-email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="person-summary">个人简介</label>
+                        <textarea id="person-summary" name="summary" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="work-experience">工作经历</label>
+                        <textarea id="work-experience" name="workExperience" rows="6" 
+                                  placeholder="请描述您的工作经历..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="education">教育背景</label>
+                        <textarea id="education" name="education" rows="4" 
+                                  placeholder="请描述您的教育背景..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills">技能特长</label>
+                        <textarea id="skills" name="skills" rows="4" 
+                                  placeholder="请列出您的技能特长..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
+                <button type="button" class="btn-primary" onclick="saveResume()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <script src="src/js/resume.js"></script>
 </body>
 </html>
