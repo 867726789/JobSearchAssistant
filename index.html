@@ -1,248 +1,186 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>秋招求职助手</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="src/css/styles.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#3B82F6',
-            'status-applied': '#60A5FA',
-            'status-interview1': '#34D399',
-            'status-interview2': '#10B981',
-            'status-interview3': '#059669',
-            'status-interview4': '#047857',
-            'status-hr': '#F59E0B',
-            'status-rejected': '#EF4444'
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>求职助手 - 首页</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#8B5CF6',
+                        accent: '#10B981'
+                    }
+                }
+            }
         }
-      }
-    }
-  </script>
+    </script>
 </head>
-<body class="bg-gray-50 font-sans">
-  <!-- 顶部导航栏 -->
-  <header class="bg-white shadow-md sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fa fa-briefcase text-primary text-2xl"></i>
-        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-gray-800">秋招求职助手</h1>
-      </div>
-      <div class="flex items-center space-x-3">
-        <button id="importExcelBtn" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg">
-          <i class="fa fa-upload mr-2"></i>导入Excel
-        </button>
-        <button id="exportExcelBtn" class="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg">
-          <i class="fa fa-download mr-2"></i>导出Excel
-        </button>
-        <button id="addCompanyBtn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg">
-          <i class="fa fa-plus mr-2"></i>添加公司
-        </button>
-      </div>
-    </div>
-  </header>
+<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fa fa-briefcase text-primary text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">求职助手</span>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="dashboard.html" class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-all flex items-center">
+                        <i class="fa fa-tachometer-alt mr-2"></i>
+                        进入看板
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-  <main class="container mx-auto px-4 py-8">
-    <!-- 统计和筛选区域 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <!-- 统计卡片 -->
-      <div class="bg-white rounded-xl shadow p-6 col-span-1 transform transition-all duration-300 hover:shadow-lg">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">投递统计</h2>
-        <div class="h-64">
-          <canvas id="statusChart"></canvas>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-applied mr-2"></span>
-            <span class="text-sm text-gray-600">已投递</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-interview1 mr-2"></span>
-            <span class="text-sm text-gray-600">一面</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-interview2 mr-2"></span>
-            <span class="text-sm text-gray-600">二面</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-interview3 mr-2"></span>
-            <span class="text-sm text-gray-600">三面</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-interview4 mr-2"></span>
-            <span class="text-sm text-gray-600">四面</span>
-          </div>
-          <div class="flex items-center">
-            <span class="w-3 h-3 rounded-full bg-status-hr mr-2"></span>
-            <span class="text-sm text-gray-600">HR面</span>
-          </div>
-          <div class="flex items-center col-span-2 sm:col-span-1">
-            <span class="w-3 h-3 rounded-full bg-status-rejected mr-2"></span>
-            <span class="text-sm text-gray-600">已挂</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 筛选和排序 -->
-      <div class="bg-white rounded-xl shadow p-6 col-span-1 lg:col-span-2 transform transition-all duration-300 hover:shadow-lg">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">筛选与排序</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">投递状态</label>
-            <div class="flex flex-wrap gap-2">
-              <button class="status-filter px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-sm transition-all ring-2 ring-primary/50" data-status="all">全部</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-applied/20 hover:bg-status-applied/30 text-status-applied text-sm transition-all" data-status="applied">已投递</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-interview1/20 hover:bg-status-interview1/30 text-status-interview1 text-sm transition-all" data-status="interview1">一面</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-interview2/20 hover:bg-status-interview2/30 text-status-interview2 text-sm transition-all" data-status="interview2">二面</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-interview3/20 hover:bg-status-interview3/30 text-status-interview3 text-sm transition-all" data-status="interview3">三面</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-interview4/20 hover:bg-status-interview4/30 text-status-interview4 text-sm transition-all" data-status="interview4">四面</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-hr/20 hover:bg-status-hr/30 text-status-hr text-sm transition-all" data-status="hr">HR面</button>
-              <button class="status-filter px-3 py-1 rounded-full bg-status-rejected/20 hover:bg-status-rejected/30 text-status-rejected text-sm transition-all" data-status="rejected">已挂</button>
+    <!-- 英雄区域 -->
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10"></div>
+        <div class="container mx-auto px-4 py-20 relative">
+            <div class="text-center max-w-4xl mx-auto">
+                <h1 class="text-5xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
+                    让求职之路
+                    <span class="text-primary">井井有条</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                    专业的求职信息管理系统，帮你追踪每一次投递、面试和进展
+                    <br>
+                    让秋招不再手忙脚乱，让机会不再错过
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="dashboard.html" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 shadow-lg flex items-center justify-center">
+                        <i class="fa fa-rocket mr-2"></i>
+                        立即开始
+                    </a>
+                    <button onclick="scrollToFeatures()" class="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all">
+                        <i class="fa fa-info-circle mr-2"></i>
+                        了解更多
+                    </button>
+                </div>
             </div>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">排序方式</label>
-            <div class="flex flex-wrap gap-2">
-              <button id="sortByDateAsc" class="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-sm transition-all flex items-center ring-2 ring-primary/50">
-                <i class="fa fa-calendar mr-1"></i> 面试时间最早
-              </button>
-              <button id="sortByDateDesc" class="px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-sm transition-all flex items-center">
-                <i class="fa fa-calendar mr-1"></i> 面试时间最晚
-              </button>
-            </div>
-          </div>
         </div>
-        
-        <div class="mt-4 flex justify-between items-center">
-          <div class="flex items-center gap-3">
-            <div class="text-gray-600">
-              共 <span id="totalCount" class="font-semibold">0</span> 条记录
-            </div>
-            <button id="batchDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg hidden">
-              <i class="fa fa-trash mr-2"></i> 批量删除
-            </button>
-            <button id="exitBatchModeBtn" class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg hidden">
-              <i class="fa fa-times mr-2"></i> 退出删除模式
-            </button>
-            <button id="enterBatchModeBtn" class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-all flex items-center shadow-md hover:shadow-lg">
-              <i class="fa fa-check-square-o mr-2"></i> 进入删除模式
-            </button>
-          </div>
-          <button id="clearAllBtn" class="text-gray-500 hover:text-gray-700 text-sm transition-all flex items-center">
-            <i class="fa fa-trash-o mr-1"></i> 清空所有记录
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 公司列表 -->
-    <div id="companyList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <!-- 公司卡片将通过JavaScript动态生成 -->
-      <div class="col-span-full flex justify-center items-center py-16 text-gray-500">
-        <div class="text-center">
-          <i class="fa fa-file-text-o text-5xl mb-4 opacity-30"></i>
-          <p>还没有添加任何公司记录</p>
-          <p class="mt-2">点击"添加公司"按钮开始记录你的秋招历程</p>
-        </div>
-      </div>
-    </div>
-  </main>
-  
-  <!-- 添加/编辑公司的模态框 -->
-  <div id="companyModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-transition scale-95">
-      <div class="p-6 border-b">
-        <div class="flex justify-between items-center">
-          <h2 id="modalTitle" class="text-xl font-bold text-gray-800">添加公司记录</h2>
-          <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 transition-colors">
-            <i class="fa fa-times text-xl"></i>
-          </button>
-        </div>
-      </div>
-      
-      <form id="companyForm" class="p-6 space-y-4">
-        <input type="hidden" id="companyId">
-        
-        <div>
-          <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">公司名称 <span class="text-red-500">*</span></label>
-          <input type="text" id="companyName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" required>
-        </div>
-        
-        <div>
-          <label for="status" class="block text-sm font-medium text-gray-700 mb-1">投递状态 <span class="text-red-500">*</span></label>
-          <select id="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" required>
-            <option value="applied">已投递</option>
-            <option value="interview1">一面</option>
-            <option value="interview2">二面</option>
-            <option value="interview3">三面</option>
-            <option value="interview4">四面</option>
-            <option value="hr">HR面</option>
-            <option value="rejected">已挂</option>
-          </select>
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">面试时间</label>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="interviewStartTime" class="block text-xs text-gray-500 mb-1">开始时间</label>
-              <input type="datetime-local" id="interviewStartTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none">
-            </div>
-            <div>
-              <label for="interviewEndTime" class="block text-xs text-gray-500 mb-1">结束时间</label>
-              <input type="datetime-local" id="interviewEndTime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none">
-            </div>
-          </div>
-          <div class="mt-2 flex gap-2">
-            <button type="button" onclick="setQuickDuration(30)" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm rounded transition-all">+30分钟</button>
-            <button type="button" onclick="setQuickDuration(60)" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm rounded transition-all">+60分钟</button>
-            <button type="button" onclick="setQuickDuration(90)" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm rounded transition-all">+90分钟</button>
-          </div>
-        </div>
-        
-        <div>
-          <label for="interviewLink" class="block text-sm font-medium text-gray-700 mb-1">面试网址链接</label>
-          <input type="url" id="interviewLink" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="https://...">
-        </div>
-        
-        <div>
-          <label for="summary" class="block text-sm font-medium text-gray-700 mb-1">总结</label>
-          <textarea id="summary" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="记录面试内容、问题等"></textarea>
-        </div>
-        
-        <!-- 动态总结链接管理 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">总结链接</label>
-          <div id="summaryLinksContainer" class="space-y-2">
-            <!-- 动态链接将在这里生成 -->
-          </div>
-          <button type="button" onclick="addSummaryLink()" class="mt-2 px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 text-sm rounded transition-all flex items-center">
-            <i class="fa fa-plus mr-1"></i> 添加链接
-          </button>
-        </div>
-        
-        <div class="flex justify-end gap-3 pt-4 border-t">
-          <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all">取消</button>
-          <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow hover:shadow-md">保存</button>
-        </div>
-      </form>
-    </div>
-  </div>
-  
-  <!-- 隐藏的文件输入用于导入Excel -->
-  <input type="file" id="excelFileInput" accept=".xlsx,.xls" class="hidden">
+    </section>
 
-  <!-- 引入JavaScript -->
-  <script type="module" src="src/js/app.js"></script>
+    <!-- 功能特色 -->
+    <section id="features" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">核心功能</h2>
+                <p class="text-xl text-gray-600">一站式管理你的求职全流程</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 投递追踪 -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl text-center transform transition-all duration-300 hover:scale-105">
+                    <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa fa-paper-plane text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">投递追踪</h3>
+                    <p class="text-gray-600 mb-6">记录每一次投递的公司、岗位和时间，清晰掌握投递进度</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ 公司信息管理</li>
+                        <li>✓ 投递状态更新</li>
+                        <li>✓ 时间轴展示</li>
+                    </ul>
+                </div>
+
+                <!-- 面试管理 -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-8 rounded-2xl text-center transform transition-all duration-300 hover:scale-105">
+                    <div class="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa fa-calendar-check text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">面试管理</h3>
+                    <p class="text-gray-600 mb-6">管理所有面试安排，从一面到HR面，全程记录</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ 面试时间提醒</li>
+                        <li>✓ 面试内容记录</li>
+                        <li>✓ 面试经验总结</li>
+                    </ul>
+                </div>
+
+                <!-- 数据分析 -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl text-center transform transition-all duration-300 hover:scale-105">
+                    <div class="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa fa-chart-pie text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">数据分析</h3>
+                    <p class="text-gray-600 mb-6">智能分析求职数据，可视化展示求职进展和成功率</p>
+                    <ul class="text-sm text-gray-500 space-y-2">
+                        <li>✓ 投递统计图表</li>
+                        <li>✓ 状态分布分析</li>
+                        <li>✓ 进度一目了然</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用流程 -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">简单三步，开始管理</h2>
+                <p class="text-xl text-gray-600">直观的操作流程，让你快速上手</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">添加公司</h3>
+                    <p class="text-gray-600">输入公司名称和基本信息，开始记录你的求职历程</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">更新状态</h3>
+                    <p class="text-gray-600">根据面试进展，实时更新投递状态和面试信息</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">查看分析</h3>
+                    <p class="text-gray-600">通过图表直观了解求职进展，调整求职策略</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速开始区域 -->
+    <section class="py-20 bg-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-4">准备好开始了吗？</h2>
+            <p class="text-xl mb-8 opacity-90">立即使用求职助手，让每一次机会都不被错过</p>
+            <a href="dashboard.html" class="bg-white text-primary px-8 py-4 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 shadow-lg inline-flex items-center">
+                <i class="fa fa-arrow-right mr-2"></i>
+                进入看板
+            </a>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">求职助手 - 你的求职好伙伴</p>
+        </div>
+    </footer>
+
+    <script>
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
