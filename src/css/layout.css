@@ -1,0 +1,13 @@
+/* 布局样式 */
+/* 网格布局优化 */
+#companyList {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* 响应式布局 */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

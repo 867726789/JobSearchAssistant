@@ -1,0 +1,24 @@
+/* 响应式样式 - 网格布局 */
+@media (max-width: 768px) {
+  #companyList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1280px) {
+  #companyList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1281px) {
+  #companyList {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1536px) {
+  #companyList {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
