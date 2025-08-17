@@ -8,6 +8,271 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="src/css/styles.css">
     <link rel="stylesheet" href="src/css/resume.css">
+    <style>
+        /* 精细编辑页面样式 */
+        .edit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 2000;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .edit-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .edit-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: calc(100vh - 73px);
+        }
+
+        .edit-form-section {
+            padding: 24px;
+            background: #f9fafb;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+        }
+
+        .edit-preview-section {
+            padding: 24px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .form-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .form-field input,
+        .form-field select,
+        .form-field textarea {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-field input:focus,
+        .form-field select:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .template-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .template-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-option:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .template-option.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .template-preview-small {
+            width: 60px;
+            height: 80px;
+            margin: 0 auto 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .preview-header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .preview-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .preview-contact {
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .preview-section {
+            margin-bottom: 24px;
+        }
+
+        .preview-section h4 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .preview-content {
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        @media (max-width: 1024px) {
+            .edit-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .edit-form-section {
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            .template-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .edit-header {
+                padding: 12px 16px;
+            }
+            
+            .edit-form-section,
+            .edit-preview-section {
+                padding: 16px;
+            }
+            
+            .template-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <!-- 侧边栏 -->
@@ -144,78 +409,775 @@
         </main>
     </div>
 
-    <!-- 简历编辑模态框 -->
-    <div id="resume-edit-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">编辑简历</h3>
-                <button class="modal-close" onclick="closeEditModal()">
-                    <i class="fas fa-times"></i>
+    <!-- 精细简历编辑页面 -->
+    <div id="resume-edit-overlay" class="edit-overlay">
+        <div class="edit-header">
+            <div class="flex items-center gap-4">
+                <button onclick="closeEditPage()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-arrow-left text-lg"></i>
+                </button>
+                <h2 id="edit-page-title">创建新简历</h2>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="saveAsDraft()">
+                    <i class="fas fa-save mr-2"></i>保存草稿
+                </button>
+                <button class="btn btn-primary" onclick="saveAndClose()">
+                    <i class="fas fa-check mr-2"></i>完成编辑
                 </button>
             </div>
-            <div class="modal-body">
-                <form id="resume-edit-form">
-                    <div class="form-group">
-                        <label for="resume-name">简历名称</label>
-                        <input type="text" id="resume-name" name="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="resume-template">选择模板</label>
-                        <select id="resume-template" name="template" required>
-                            <option value="classic">经典模板</option>
-                            <option value="modern">现代模板</option>
-                            <option value="minimal">简约模板</option>
-                            <option value="creative">创意模板</option>
-                        </select>
+        </div>
+
+        <div class="edit-content">
+            <!-- 左侧编辑表单 -->
+            <div class="edit-form-section">
+                <form id="detailed-resume-form">
+                    <!-- 基本信息 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-user-circle"></i>基本信息</h3>
+                        <div class="form-grid form-grid-2">
+                            <div class="form-field">
+                                <label>姓名 *</label>
+                                <input type="text" id="detail-name" name="name" placeholder="请输入您的姓名" required>
+                            </div>
+                            <div class="form-field">
+                                <label>求职意向 *</label>
+                                <input type="text" id="detail-position" name="position" placeholder="如：前端开发工程师" required>
+                            </div>
+                        </div>
+                        <div class="form-grid form-grid-3">
+                            <div class="form-field">
+                                <label>电话 *</label>
+                                <input type="tel" id="detail-phone" name="phone" placeholder="138****8888" required>
+                            </div>
+                            <div class="form-field">
+                                <label>邮箱 *</label>
+                                <input type="email" id="detail-email" name="email" placeholder="example@email.com" required>
+                            </div>
+                            <div class="form-field">
+                                <label>工作年限</label>
+                                <select id="detail-experience" name="experience">
+                                    <option value="">请选择</option>
+                                    <option value="应届生">应届生</option>
+                                    <option value="1-3年">1-3年</option>
+                                    <option value="3-5年">3-5年</option>
+                                    <option value="5-10年">5-10年</option>
+                                    <option value="10年以上">10年以上</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label>个人简介 *</label>
+                            <textarea id="detail-summary" name="summary" rows="4" 
+                                      placeholder="用简短的话介绍自己，突出核心优势和职业目标..." required></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="person-name">姓名</label>
-                        <input type="text" id="person-name" name="personName" required>
+                    <!-- 模板选择 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-palette"></i>选择模板</h3>
+                        <div class="template-selector">
+                            <div class="template-option" data-template="classic">
+                                <div class="template-preview-small" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px;">经典模板</div>
+                                    <div style="font-size: 12px; color: #6b7280;">专业简洁</div>
+                                </div>
+                            </div>
+                            <div class="template-option" data-template="modern">
+                                <div class="template-preview-small" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px;">现代模板</div>
+                                    <div style="font-size: 12px; color: #6b7280;">时尚设计</div>
+                                </div>
+                            </div>
+                            <div class="template-option" data-template="minimal">
+                                <div class="template-preview-small" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px;">简约模板</div>
+                                    <div style="font-size: 12px; color: #6b7280;">极简风格</div>
+                                </div>
+                            </div>
+                            <div class="template-option" data-template="creative">
+                                <div class="template-preview-small" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px;">创意模板</div>
+                                    <div style="font-size: 12px; color: #6b7280;">个性设计</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="person-phone">电话</label>
-                        <input type="tel" id="person-phone" name="phone" required>
+                    <!-- 工作经历 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-briefcase"></i>工作经历</h3>
+                        <div id="work-experience-container">
+                            <div class="work-item">
+                                <div class="form-grid form-grid-2">
+                                    <div class="form-field">
+                                        <label>公司名称 *</label>
+                                        <input type="text" name="company[]" placeholder="如：腾讯科技有限公司">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>职位 *</label>
+                                        <input type="text" name="jobTitle[]" placeholder="如：前端开发工程师">
+                                    </div>
+                                </div>
+                                <div class="form-grid form-grid-2">
+                                    <div class="form-field">
+                                        <label>开始时间 *</label>
+                                        <input type="month" name="startDate[]">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>结束时间</label>
+                                        <input type="month" name="endDate[]">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label>工作描述 *</label>
+                                    <textarea name="jobDescription[]" rows="3" 
+                                              placeholder="描述您的工作职责和成就..."></textarea>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="addWorkExperience()" style="width: 100%; margin-top: 12px;">
+                                    <i class="fas fa-plus mr-2"></i>添加工作经历
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="person-email">邮箱</label>
-                        <input type="email" id="person-email" name="email" required>
+                    <!-- 教育背景 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-graduation-cap"></i>教育背景</h3>
+                        <div id="education-container">
+                            <div class="education-item">
+                                <div class="form-grid form-grid-2">
+                                    <div class="form-field">
+                                        <label>学校名称 *</label>
+                                        <input type="text" name="school[]" placeholder="如：北京大学">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>学历 *</label>
+                                        <select name="degree[]">
+                                            <option value="">请选择</option>
+                                            <option value="高中">高中</option>
+                                            <option value="专科">专科</option>
+                                            <option value="本科">本科</option>
+                                            <option value="硕士">硕士</option>
+                                            <option value="博士">博士</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid form-grid-2">
+                                    <div class="form-field">
+                                        <label>专业 *</label>
+                                        <input type="text" name="major[]" placeholder="如：计算机科学与技术">
+                                    </div>
+                                    <div class="form-field">
+                                        <label>在校时间 *</label>
+                                        <input type="text" name="educationTime[]" placeholder="如：2017.09 - 2021.06">
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="addEducation()" style="width: 100%; margin-top: 12px;">
+                                    <i class="fas fa-plus mr-2"></i>添加教育经历
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="person-summary">个人简介</label>
-                        <textarea id="person-summary" name="summary" rows="4" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="work-experience">工作经历</label>
-                        <textarea id="work-experience" name="workExperience" rows="6" 
-                                  placeholder="请描述您的工作经历..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="education">教育背景</label>
-                        <textarea id="education" name="education" rows="4" 
-                                  placeholder="请描述您的教育背景..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="skills">技能特长</label>
-                        <textarea id="skills" name="skills" rows="4" 
-                                  placeholder="请列出您的技能特长..."></textarea>
+                    <!-- 技能特长 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-tools"></i>技能特长</h3>
+                        <div class="form-field">
+                            <label>专业技能</label>
+                            <textarea id="detail-skills" name="skills" rows="4" 
+                                      placeholder="列出您的专业技能，用逗号分隔..."></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label>语言能力</label>
+                            <textarea id="detail-languages" name="languages" rows="2" 
+                                      placeholder="如：英语（CET-6），日语（N2）..."></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label>证书资质</label>
+                            <textarea id="detail-certificates" name="certificates" rows="2" 
+                                      placeholder="如：PMP证书，教师资格证..."></textarea>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" onclick="closeEditModal()">取消</button>
-                <button type="button" class="btn-primary" onclick="saveResume()">保存</button>
+
+            <!-- 右侧实时预览 -->
+            <div class="edit-preview-section">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <div class="preview-name" id="preview-name">您的姓名</div>
+                        <div class="preview-contact" id="preview-contact">
+                            <span id="preview-phone">电话</span> | 
+                            <span id="preview-email">邮箱</span> | 
+                            <span id="preview-position">求职意向</span>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4>个人简介</h4>
+                        <div class="preview-content" id="preview-summary">请输入个人简介...</div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4>工作经历</h4>
+                        <div id="preview-work-experience">
+                            <div class="preview-content">请添加工作经历...</div>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4>教育背景</h4>
+                        <div id="preview-education">
+                            <div class="preview-content">请添加教育背景...</div>
+                        </div>
+                    </div>
+
+                    <div class="preview-section">
+                        <h4>技能特长</h4>
+                        <div class="preview-content" id="preview-skills">请添加技能特长...</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="src/js/resume.js"></script>
+    <script>
+        // 全局变量
+        let resumes = [];
+        let editingResumeId = null;
+        let selectedTemplate = 'modern';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+            loadResumes();
+            renderResumeList();
+            updateStats();
+            bindRealTimePreview();
+        });
+
+        // 初始化页面
+        function initializePage() {
+            initializeSidebar();
+            bindEvents();
+        }
+
+        // 侧边栏功能
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            let sidebarTimeout;
+
+            sidebar.addEventListener('mouseenter', () => {
+                clearTimeout(sidebarTimeout);
+                sidebar.classList.remove('sidebar-collapsed');
+                sidebar.classList.add('sidebar-expanded');
+                mainContent.classList.add('sidebar-open');
+            });
+
+            sidebar.addEventListener('mouseleave', () => {
+                sidebarTimeout = setTimeout(() => {
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                    mainContent.classList.remove('sidebar-open');
+                }, 300);
+            });
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            const menuToggle = document.querySelector('.sidebar-toggle');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', toggleMobileSidebar);
+            }
+
+            const searchInput = document.getElementById('search-resumes');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterResumes);
+            }
+
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', handleMenuClick);
+            });
+
+            window.addEventListener('resize', handleResize);
+            handleResize();
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('mobile-open');
+        }
+
+        function handleMenuClick(e) {
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        }
+
+        function handleResize() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        }
+
+        // 加载简历数据
+        function loadResumes() {
+            const saved = localStorage.getItem('resumes');
+            if (saved) {
+                resumes = JSON.parse(saved);
+            } else {
+                resumes = [
+                    {
+                        id: 1,
+                        name: '前端开发工程师',
+                        template: 'modern',
+                        lastModified: new Date('2024-01-15'),
+                        content: {
+                            name: '张三',
+                            position: '前端开发工程师',
+                            phone: '138****8888',
+                            email: 'zhangsan@example.com',
+                            summary: '3年前端开发经验，精通React、Vue等框架',
+                            workExperience: [{
+                                company: '腾讯科技有限公司',
+                                jobTitle: '前端开发工程师',
+                                startDate: '2021-03',
+                                endDate: '至今',
+                                description: '负责公司核心产品的前端开发，使用React、Vue等框架进行开发，优化前端性能，提升用户体验。'
+                            }],
+                            education: [{
+                                school: '北京大学',
+                                degree: '本科',
+                                major: '计算机科学与技术',
+                                time: '2017.09 - 2021.06'
+                            }],
+                            skills: 'JavaScript, TypeScript, React, Vue, Node.js, Webpack, Git',
+                            languages: '英语（CET-6）',
+                            certificates: '前端开发工程师证书'
+                        }
+                    }
+                ];
+                saveResumes();
+            }
+        }
+
+        function saveResumes() {
+            localStorage.setItem('resumes', JSON.stringify(resumes));
+        }
+
+        function renderResumeList() {
+            const listContainer = document.getElementById('resume-list');
+            if (!listContainer) return;
+
+            if (resumes.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-file-alt text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 mb-4">还没有简历，开始创建吧！</p>
+                        <button onclick="createNewResume()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            创建新简历
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = resumes.map(resume => `
+                <div class="resume-item" onclick="openEditPage(${resume.id})" style="cursor: pointer;">
+                    <div class="resume-info">
+                        <h4>${resume.name}</h4>
+                        <p>模板：${getTemplateName(resume.template)} • 最后修改：${formatDate(resume.lastModified)}</p>
+                    </div>
+                    <div class="resume-actions" onclick="event.stopPropagation()">
+                        <button class="btn-icon" onclick="editResume(${resume.id})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" onclick="previewResume(${resume.id})" title="预览">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon" onclick="duplicateResume(${resume.id})" title="复制">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn-icon text-red-600" onclick="deleteResume(${resume.id})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getTemplateName(template) {
+            const names = {
+                classic: '经典模板',
+                modern: '现代模板',
+                minimal: '简约模板',
+                creative: '创意模板'
+            };
+            return names[template] || '未知模板';
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('zh-CN');
+        }
+
+        function updateStats() {
+            const totalEl = document.getElementById('total-resumes');
+            const recentEl = document.getElementById('recent-resumes');
+            
+            if (totalEl) {
+                totalEl.textContent = resumes.length;
+            }
+            
+            if (recentEl) {
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                const recentCount = resumes.filter(r => new Date(r.lastModified) >= oneWeekAgo).length;
+                recentEl.textContent = recentCount;
+            }
+        }
+
+        // 打开精细编辑页面
+        function openEditPage(resumeId) {
+            const resume = resumes.find(r => r.id === resumeId);
+            editingResumeId = resumeId;
+            
+            if (resume) {
+                loadEditPageData(resume);
+                document.getElementById('edit-page-title').textContent = `编辑简历 - ${resume.name}`;
+            } else {
+                loadEditPageData(null);
+                document.getElementById('edit-page-title').textContent = '创建新简历';
+            }
+            
+            document.getElementById('resume-edit-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function createNewResume() {
+            editingResumeId = null;
+            loadEditPageData(null);
+            document.getElementById('edit-page-title').textContent = '创建新简历';
+            document.getElementById('resume-edit-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditPage() {
+            document.getElementById('resume-edit-overlay').style.display = 'none';
+            document.body.style.overflow = '';
+            editingResumeId = null;
+        }
+
+        function loadEditPageData(resume) {
+            if (resume) {
+                // 填充现有数据
+                document.getElementById('detail-name').value = resume.content.name || '';
+                document.getElementById('detail-position').value = resume.content.position || '';
+                document.getElementById('detail-phone').value = resume.content.phone || '';
+                document.getElementById('detail-email').value = resume.content.email || '';
+                document.getElementById('detail-summary').value = resume.content.summary || '';
+                document.getElementById('detail-skills').value = resume.content.skills || '';
+                document.getElementById('detail-languages').value = resume.content.languages || '';
+                document.getElementById('detail-certificates').value = resume.content.certificates || '';
+                
+                selectedTemplate = resume.template || 'modern';
+                document.querySelector(`[data-template="${selectedTemplate}"]`).classList.add('selected');
+                
+                // 填充工作经历
+                // 填充教育背景
+                updateRealTimePreview();
+            } else {
+                // 清空表单
+                document.getElementById('detailed-resume-form').reset();
+                selectedTemplate = 'modern';
+                document.querySelector(`[data-template="${selectedTemplate}"]`).classList.add('selected');
+                updateRealTimePreview();
+            }
+        }
+
+        // 实时预览绑定
+        function bindRealTimePreview() {
+            const inputs = ['detail-name', 'detail-position', 'detail-phone', 'detail-email', 'detail-summary', 
+                           'detail-skills', 'detail-languages', 'detail-certificates'];
+            
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateRealTimePreview);
+                }
+            });
+
+            // 模板选择
+            document.querySelectorAll('.template-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedTemplate = this.dataset.template;
+                    updateRealTimePreview();
+                });
+            });
+        }
+
+        function updateRealTimePreview() {
+            const name = document.getElementById('detail-name').value || '您的姓名';
+            const position = document.getElementById('detail-position').value || '求职意向';
+            const phone = document.getElementById('detail-phone').value || '电话';
+            const email = document.getElementById('detail-email').value || '邮箱';
+            const summary = document.getElementById('detail-summary').value || '请输入个人简介...';
+            const skills = document.getElementById('detail-skills').value || '请添加技能特长...';
+            const languages = document.getElementById('detail-languages').value;
+            const certificates = document.getElementById('detail-certificates').value;
+
+            document.getElementById('preview-name').textContent = name;
+            document.getElementById('preview-position').textContent = position;
+            document.getElementById('preview-phone').textContent = phone;
+            document.getElementById('preview-email').textContent = email;
+            document.getElementById('preview-summary').textContent = summary;
+            document.getElementById('preview-skills').textContent = skills;
+        }
+
+        // 保存功能
+        function saveAsDraft() {
+            saveResumeData(false);
+        }
+
+        function saveAndClose() {
+            saveResumeData(true);
+        }
+
+        function saveResumeData(closeAfterSave) {
+            const formData = new FormData(document.getElementById('detailed-resume-form'));
+            
+            const resumeData = {
+                name: document.getElementById('detail-position').value || '未命名简历',
+                template: selectedTemplate,
+                content: {
+                    name: document.getElementById('detail-name').value,
+                    position: document.getElementById('detail-position').value,
+                    phone: document.getElementById('detail-phone').value,
+                    email: document.getElementById('detail-email').value,
+                    summary: document.getElementById('detail-summary').value,
+                    skills: document.getElementById('detail-skills').value,
+                    languages: document.getElementById('detail-languages').value,
+                    certificates: document.getElementById('detail-certificates').value,
+                    workExperience: [],
+                    education: []
+                },
+                lastModified: new Date()
+            };
+
+            // 验证必填字段
+            if (!resumeData.content.name || !resumeData.content.position) {
+                alert('请填写姓名和求职意向');
+                return;
+            }
+
+            if (editingResumeId) {
+                // 更新现有简历
+                const index = resumes.findIndex(r => r.id === editingResumeId);
+                if (index !== -1) {
+                    resumes[index] = { ...resumes[index], ...resumeData };
+                }
+            } else {
+                // 创建新简历
+                const newId = Math.max(...resumes.map(r => r.id), 0) + 1;
+                resumes.push({
+                    id: newId,
+                    ...resumeData
+                });
+            }
+
+            saveResumes();
+            renderResumeList();
+            updateStats();
+            
+            if (closeAfterSave) {
+                closeEditPage();
+            } else {
+                alert('草稿已保存');
+            }
+        }
+
+        // 其他功能函数
+        function editResume(resumeId) {
+            event.stopPropagation();
+            openEditPage(resumeId);
+        }
+
+        function previewResume(resumeId) {
+            event.stopPropagation();
+            const resume = resumes.find(r => r.id === resumeId);
+            if (resume) {
+                alert(`预览简历：${resume.name}`);
+            }
+        }
+
+        function duplicateResume(resumeId) {
+            event.stopPropagation();
+            const resume = resumes.find(r => r.id === resumeId);
+            if (resume) {
+                const newResume = {
+                    ...resume,
+                    id: Math.max(...resumes.map(r => r.id), 0) + 1,
+                    name: `${resume.name} - 副本`,
+                    lastModified: new Date()
+                };
+                resumes.push(newResume);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        function deleteResume(resumeId) {
+            event.stopPropagation();
+            if (confirm('确定要删除这个简历吗？')) {
+                resumes = resumes.filter(r => r.id !== resumeId);
+                saveResumes();
+                renderResumeList();
+                updateStats();
+            }
+        }
+
+        function filterResumes() {
+            const searchTerm = document.getElementById('search-resumes').value.toLowerCase();
+            const filteredResumes = resumes.filter(resume => 
+                resume.name.toLowerCase().includes(searchTerm) ||
+                resume.content.name.toLowerCase().includes(searchTerm) ||
+                resume.content.position.toLowerCase().includes(searchTerm)
+            );
+
+            const listContainer = document.getElementById('resume-list');
+            if (filteredResumes.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">没有找到匹配的简历</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = filteredResumes.map(resume => `
+                <div class="resume-item" onclick="openEditPage(${resume.id})" style="cursor: pointer;">
+                    <div class="resume-info">
+                        <h4>${resume.name}</h4>
+                        <p>模板：${getTemplateName(resume.template)} • 最后修改：${formatDate(resume.lastModified)}</p>
+                    </div>
+                    <div class="resume-actions" onclick="event.stopPropagation()">
+                        <button class="btn-icon" onclick="editResume(${resume.id})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon" onclick="previewResume(${resume.id})" title="预览">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon" onclick="duplicateResume(${resume.id})" title="复制">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn-icon text-red-600" onclick="deleteResume(${resume.id})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectTemplate(template) {
+            selectedTemplate = template;
+            document.querySelectorAll('.template-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`.template-${template}`).classList.add('selected');
+        }
+
+        // 添加工作经历
+        function addWorkExperience() {
+            const container = document.getElementById('work-experience-container');
+            const div = document.createElement('div');
+            div.className = 'work-item';
+            div.innerHTML = `
+                <div style="border-top: 1px solid #e5e7eb; margin: 16px 0;"></div>
+                <div class="form-grid form-grid-2">
+                    <div class="form-field">
+                        <label>公司名称 *</label>
+                        <input type="text" name="company[]" placeholder="如：腾讯科技有限公司">
+                    </div>
+                    <div class="form-field">
+                        <label>职位 *</label>
+                        <input type="text" name="jobTitle[]" placeholder="如：前端开发工程师">
+                    </div>
+                </div>
+                <div class="form-grid form-grid-2">
+                    <div class="form-field">
+                        <label>开始时间 *</label>
+                        <input type="month" name="startDate[]">
+                    </div>
+                    <div class="form-field">
+                        <label>结束时间</label>
+                        <input type="month" name="endDate[]">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>工作描述 *</label>
+                    <textarea name="jobDescription[]" rows="3" placeholder="描述您的工作职责和成就..."></textarea>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // 添加教育背景
+        function addEducation() {
+            const container = document.getElementById('education-container');
+            const div = document.createElement('div');
+            div.className = 'education-item';
+            div.innerHTML = `
+                <div style="border-top: 1px solid #e5e7eb; margin: 16px 0;"></div>
+                <div class="form-grid form-grid-2">
+                    <div class="form-field">
+                        <label>学校名称 *</label>
+                        <input type="text" name="school[]" placeholder="如：北京大学">
+                    </div>
+                    <div class="form-field">
+                        <label>学历 *</label>
+                        <select name="degree[]">
+                            <option value="">请选择</option>
+                            <option value="高中">高中</option>
+                            <option value="专科">专科</option>
+                            <option value="本科">本科</option>
+                            <option value="硕士">硕士</option>
+                            <option value="博士">博士</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid form-grid-2">
+                    <div class="form-field">
+                        <label>专业 *</label>
+                        <input type="text" name="major[]" placeholder="如：计算机科学与技术">
+                    </div>
+                    <div class="form-field">
+                        <label>在校时间 *</label>
+                        <input type="text" name="educationTime[]" placeholder="如：2017.09 - 2021.06">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+    </script>
 </body>
 </html>
