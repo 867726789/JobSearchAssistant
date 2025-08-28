@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "npx serve .",
     "build": "echo 'Static site - no build needed'",
-    "preview": "npx serve ."
+    "preview": "npx serve .",
+    "tailwind": "npx @tailwindcss/cli -i ./src/vendor/css/tailwind.css -o ./src/css/tailwind.css --watch"
   },
   "keywords": [
     "job",
@@ -19,6 +20,13 @@
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "serve": "^14.2.0"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "serve": "^14.2.0",
+    "tailwindcss": "^4.1.12"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.0.0",
+    "@tailwindcss/cli": "^4.1.12"
   }
 }

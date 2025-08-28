@@ -18,7 +18,7 @@ class JobSearchApp {
     
     this.companies = [];
     this.statusChart = null;
-    
+    this.currentFilter = 'all';
     // 暴露全局函数
     this.exposeGlobalFunctions();
   }
@@ -166,6 +166,7 @@ class JobSearchApp {
   }
 
   filterCompanies(status) {
+    this.currentFilter = status;
     const filtered = this.companyManager.filterCompanies(this.companies, status);
     this.ui.renderCompanyList(filtered, this.batch.isBatchMode, this.batch.selectedCompanies);
   }
@@ -176,14 +177,17 @@ class JobSearchApp {
       btn.classList.remove('ring-2', 'ring-primary/50');
     });
     
-    // 为当前选中的排序按钮添加高亮
     const activeBtn = document.getElementById(`sortByDate${order === 'asc' ? 'Asc' : 'Desc'}`);
     if (activeBtn) {
       activeBtn.classList.add('ring-2', 'ring-primary/50');
     }
     
-    // 执行排序
-    const sorted = this.companyManager.sortCompanies(this.companies, order);
+    // 先应用筛选，再对筛选结果进行排序
+    let filtered = this.companies;
+    if (this.currentFilter !== 'all') {
+      filtered = this.companyManager.filterCompanies(this.companies, this.currentFilter);
+    }
+    const sorted = this.companyManager.sortCompanies(filtered, order);
     this.ui.renderCompanyList(sorted, this.batch.isBatchMode, this.batch.selectedCompanies);
   }
 
@@ -198,7 +202,7 @@ class JobSearchApp {
 
   render() {
     this.ui.updateTotalCount(this.companies.length);
-    this.ui.renderCompanyList(this.companies, this.batch.isBatchMode, this.batch.selectedCompanies);
+    this.filterCompanies(this.currentFilter); // 使用当前筛选状态渲染
     this.chart.updateStatusChart(this.companies);
   }
 }

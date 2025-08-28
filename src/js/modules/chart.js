@@ -20,6 +20,7 @@ export class ChartManager {
           backgroundColor: Object.keys(STATUS_COLOR_MAP).map(key => {
             const colorMap = {
               'bg-status-applied': '#60A5FA',
+              'bg-status-written': '#FB923C',
               'bg-status-interview1': '#34D399',
               'bg-status-interview2': '#10B981',
               'bg-status-interview3': '#059669',
@@ -58,6 +59,7 @@ export class ChartManager {
   calculateStatusCounts(companies) {
     const statusCounts = {
       applied: 0,
+      written: 0,
       interview1: 0,
       interview2: 0,
       interview3: 0,
