@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>简历编辑 - 求职助手</title>
     <link href="src/vendor/fonts/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
-    <link href="src/css/tailwind.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="src/css/styles.css">
     <link rel="stylesheet" href="src/css/resume.css">
     <style>
@@ -35,7 +36,7 @@
             border-radius: 8px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .form-section h3 {
@@ -131,7 +132,7 @@
         .preview-container {
             background: white;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             padding: 40px;
             max-width: 800px;
             margin: 0 auto;
@@ -226,29 +227,31 @@
             .edit-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .edit-form-section {
                 border-right: none;
                 border-bottom: 1px solid #e5e7eb;
             }
-            
+
             .template-selector {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
+
             .edit-form-section,
             .edit-preview-section {
                 padding: 16px;
             }
-            
+
             .template-selector {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans">
     <!-- 编辑页面头部 -->
     <div class="btn-group">
@@ -303,8 +306,8 @@
                     </div>
                     <div class="form-field">
                         <label>个人简介 *</label>
-                        <textarea id="detail-summary" name="summary" rows="4" 
-                                  placeholder="用简短的话介绍自己，突出核心优势和职业目标..." required></textarea>
+                        <textarea id="detail-summary" name="summary" rows="4" placeholder="用简短的话介绍自己，突出核心优势和职业目标..."
+                            required></textarea>
                     </div>
                 </div>
 
@@ -313,7 +316,8 @@
                     <h3><i class="fas fa-palette"></i>选择模板</h3>
                     <div class="template-selector">
                         <div class="template-option" data-template="classic">
-                            <div class="template-preview-small" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                            <div class="template-preview-small"
+                                style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div>
@@ -322,7 +326,8 @@
                             </div>
                         </div>
                         <div class="template-option" data-template="modern">
-                            <div class="template-preview-small" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <div class="template-preview-small"
+                                style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div>
@@ -331,7 +336,8 @@
                             </div>
                         </div>
                         <div class="template-option" data-template="minimal">
-                            <div class="template-preview-small" style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%);">
+                            <div class="template-preview-small"
+                                style="background: linear-gradient(135deg, #6b7280 0%, #374151 100%);">
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div>
@@ -340,7 +346,8 @@
                             </div>
                         </div>
                         <div class="template-option" data-template="creative">
-                            <div class="template-preview-small" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <div class="template-preview-small"
+                                style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                                 <i class="fas fa-file-alt"></i>
                             </div>
                             <div>
@@ -378,8 +385,7 @@
                             </div>
                             <div class="form-field">
                                 <label>工作内容</label>
-                                <textarea class="work-description" rows="3" 
-                                          placeholder="描述你的主要工作内容和成就..."></textarea>
+                                <textarea class="work-description" rows="3" placeholder="描述你的主要工作内容和成就..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -432,8 +438,7 @@
                     <h3><i class="fas fa-tools"></i>技能</h3>
                     <div class="form-field">
                         <label>专业技能</label>
-                        <textarea id="detail-skills" rows="4" 
-                                  placeholder="列出你的专业技能，用逗号分隔..."></textarea>
+                        <textarea id="detail-skills" rows="4" placeholder="列出你的专业技能，用逗号分隔..."></textarea>
                     </div>
                 </div>
 
@@ -458,8 +463,8 @@
                             </div>
                             <div class="form-field">
                                 <label>项目描述</label>
-                                <textarea class="project-description" rows="3" 
-                                          placeholder="描述项目背景、你的职责和成果..."></textarea>
+                                <textarea class="project-description" rows="3"
+                                    placeholder="描述项目背景、你的职责和成果..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -476,8 +481,8 @@
                 <div class="preview-header">
                     <div class="preview-name" id="preview-name">姓名</div>
                     <div class="preview-contact" id="preview-contact">
-                        <span id="preview-phone">电话</span> | 
-                        <span id="preview-email">邮箱</span> | 
+                        <span id="preview-phone">电话</span> |
+                        <span id="preview-email">邮箱</span> |
                         <span id="preview-experience">工作年限</span>
                     </div>
                     <div id="preview-position">求职意向</div>
@@ -513,4 +518,5 @@
 
     <script src="src/js/resume-edit.js"></script>
 </body>
+
 </html>
